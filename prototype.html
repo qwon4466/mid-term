@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>Sign by Sign — interactive prototype</title>
+  <style>
+    :root {
+      --ink: #18302e;
+      --muted: #647570;
+      --line: #e0e8e2;
+      --paper: #f7f8f3;
+      --white: #fff;
+      --teal: #176d65;
+      --teal-dark: #104e49;
+      --teal-soft: #e5f3ed;
+      --orange: #a95724;
+      --orange-soft: #fff0df;
+      --shadow: 0 26px 70px rgba(19, 54, 48, .2);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: Inter, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: var(--ink); background: #e9efea; }
+    button { font: inherit; cursor: pointer; }
+    button:disabled { cursor: default; opacity: .48; }
+    button:focus-visible, [tabindex]:focus-visible { outline: 3px solid #f7af65; outline-offset: 3px; }
+    .desktop-stage { min-height: 100vh; display: grid; grid-template-columns: minmax(280px, 420px) 390px; align-items: center; justify-content: center; gap: min(8vw, 110px); padding: 32px; }
+    .presentation { align-self: center; max-width: 420px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--teal); font-size: 12px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    .eyebrow:before { content: ""; width: 22px; height: 2px; background: currentColor; }
+    .presentation h1 { font-size: clamp(44px, 5.2vw, 70px); line-height: .98; letter-spacing: -.065em; margin: 24px 0 20px; font-weight: 800; }
+    .presentation h1 em { font-style: normal; color: var(--teal); }
+    .presentation p { font-size: 17px; line-height: 1.65; color: #556c66; max-width: 370px; }
+    .demo-note { margin-top: 42px; border-top: 1px solid #ccdad1; padding-top: 22px; display: grid; gap: 12px; color: #47645c; font-size: 14px; }
+    .demo-note strong { color: var(--ink); }
+    .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 26px; padding: 0 7px; border-radius: 6px; background: white; border: 1px solid #cbdad1; box-shadow: 0 2px 0 #cbdad1; color: var(--ink); font-size: 12px; font-weight: 700; }
+    .phone-frame { width: 390px; height: min(844px, calc(100vh - 40px)); min-height: 610px; border: 9px solid #1d3530; border-radius: 44px; background: var(--paper); box-shadow: var(--shadow); overflow: hidden; position: relative; }
+    .phone-frame:after { content: ""; position: absolute; width: 95px; height: 5px; border-radius: 20px; background: #18302e; bottom: 7px; left: 50%; transform: translateX(-50%); z-index: 30; opacity: .55; }
+    #app { height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative; background: var(--paper); }
+    .app-content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .screen { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+    .language-bar { flex: 0 0 auto; min-height: 45px; display: flex; align-items: center; justify-content: flex-end; padding: 5px 18px; border-bottom: 1px solid var(--line); background: var(--paper); }
+    .language-toggle { min-height: 44px; border: 1px solid #d4e0d7; background: white; border-radius: 999px; color: var(--teal); padding: 0 11px; display: inline-flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 850; }
+    .language-toggle svg { width: 16px; height: 16px; }
+    .language-setup-screen { overflow-y: auto; }
+    .language-picker-image { flex: 0 0 auto; height: 27%; min-height: 140px; overflow: hidden; position: relative; background: #dce9df; }
+    .language-picker-image img { width: 100%; height: 100%; object-fit: cover; }
+    .language-picker-image:after { content: ""; position: absolute; inset: 35% 0 0; background: linear-gradient(transparent, rgba(13,38,34,.34)); }
+    .language-picker-copy { flex: 0 0 auto; padding: 22px 24px 8px; }
+    .language-picker-copy h1 { margin: 9px 0 10px; font-size: 30px; line-height: 1.1; letter-spacing: -.05em; }
+    .language-picker-copy p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 13px; }
+    .language-options { display: grid; gap: 9px; padding: 12px 22px 20px; }
+    .language-option { width: 100%; min-height: 57px; border: 1.5px solid var(--line); border-radius: 16px; background: white; color: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 17px; font-size: 15px; font-weight: 800; text-align: left; }
+    .language-option.selected { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+    .language-option .radio { width: 19px; height: 19px; border: 2px solid #aebfb5; border-radius: 50%; display: grid; place-items: center; }
+    .language-option.selected .radio { border-color: var(--teal); }
+    .language-option.selected .radio:after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--teal); }
+    .language-picker-footer { flex: 0 0 auto; margin-top: auto; padding: 10px 22px max(20px, env(safe-area-inset-bottom)); }
+    .language-menu { width: 100%; max-width: 330px; max-height: 100%; overflow-y: auto; background: white; border-radius: 24px; padding: 22px; box-shadow: 0 25px 60px #0c2a2140; }
+    .language-menu h2 { font-size: 22px; letter-spacing: -.04em; margin: 0 0 8px; }
+    .language-menu p { color: var(--muted); font-size: 13px; margin: 0 0 15px; }
+    .language-menu .language-options { padding: 0; }
+    .language-menu-close { margin-top: 12px; }
+    .screen-scroll { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; scrollbar-width: thin; }
+    .pad { padding-left: 22px; padding-right: 22px; }
+    .screen-header { flex: 0 0 auto; min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; background: var(--paper); }
+    .header-title { font-size: 20px; font-weight: 800; letter-spacing: -.035em; }
+    .small-caps { font-size: 11px; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+    .icon-btn { border: 0; background: rgba(255,255,255,.85); width: 42px; height: 42px; border-radius: 15px; display: inline-grid; place-items: center; color: var(--ink); flex: 0 0 auto; }
+    .icon-btn:hover { background: #e9f1eb; }
+    .icon-btn svg, .nav-item svg, .inline-icon svg { width: 20px; height: 20px; display: block; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 850; font-size: 18px; letter-spacing: -.035em; }
+    .brand-mark { width: 31px; height: 31px; background: var(--teal); color: white; border-radius: 11px; display: grid; place-items: center; font-size: 17px; transform: rotate(-7deg); }
+    .main-nav { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; background: white; border-top: 1px solid var(--line); padding: 7px 24px max(9px, env(safe-area-inset-bottom)); gap: 8px; }
+    .nav-item { min-height: 52px; border: 0; border-radius: 14px; display: flex; justify-content: center; align-items: center; gap: 8px; color: #82928d; background: transparent; font-size: 13px; font-weight: 750; }
+    .nav-item.active { color: var(--teal); background: var(--teal-soft); }
+    .home-hero { margin: 5px 16px 24px; padding: 25px 22px 27px; border-radius: 28px; background: #e3eee6; position: relative; overflow: hidden; }
+    .home-hero:after { content: ""; width: 180px; height: 180px; position: absolute; border-radius: 50%; background: rgba(255,255,255,.42); right: -70px; top: -80px; }
+    .home-hero .small-caps { color: var(--teal); position: relative; z-index: 1; }
+    .home-hero h1 { margin: 11px 0 10px; font-size: 32px; line-height: 1.08; letter-spacing: -.055em; position: relative; z-index: 1; }
+    .home-hero p { margin: 0; font-size: 14px; line-height: 1.5; color: #52716a; max-width: 250px; position: relative; z-index: 1; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 13px; }
+    .section-head h2 { font-size: 18px; letter-spacing: -.03em; margin: 0; }
+    .section-head span { font-size: 12px; color: var(--muted); }
+    .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .category-card { text-align: left; min-height: 81px; padding: 13px 13px 11px; border-radius: 17px; border: 1.5px solid var(--line); background: white; color: var(--ink); display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+    .category-card.wide { grid-column: 1 / -1; min-height: 67px; flex-direction: row; align-items: center; }
+    .category-card.selected { border-color: var(--teal); background: #edf7f0; box-shadow: inset 0 0 0 1px var(--teal); }
+    .category-card strong { font-size: 13px; line-height: 1.18; }
+    .category-card small { color: var(--muted); font-weight: 650; font-size: 11px; }
+    .category-card.selected small { color: var(--teal); }
+    .count-pill { font-size: 11px; font-weight: 800; color: var(--teal); background: white; padding: 5px 8px; border-radius: 99px; }
+    .bottom-cta { margin: 20px 22px 22px; flex: 0 0 auto; }
+    .primary-btn { width: 100%; min-height: 54px; border: 0; border-radius: 17px; background: var(--teal); color: white; font-size: 15px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 9px; box-shadow: 0 8px 17px rgba(23,109,101,.18); }
+    .primary-btn:hover { background: var(--teal-dark); }
+    .secondary-btn { width: 100%; min-height: 51px; border: 1px solid #cbdad2; border-radius: 16px; background: white; color: var(--ink); font-size: 14px; font-weight: 780; }
+    .text-btn { border: 0; background: transparent; color: var(--teal); font-size: 14px; font-weight: 800; padding: 10px 4px; }
+    .resume { margin: 0 22px 22px; padding: 13px 14px; border: 1px solid #d5e6dc; border-radius: 18px; background: #fff; display: flex; gap: 12px; align-items: center; }
+    .resume-icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--teal-soft); color: var(--teal); flex: 0 0 auto; }
+    .resume-info { min-width: 0; flex: 1; }
+    .resume-info strong { display: block; font-size: 13px; }
+    .resume-info small { color: var(--muted); font-size: 11px; }
+    .resume button { border: 0; background: var(--teal); color: white; padding: 10px 11px; font-size: 11px; font-weight: 800; border-radius: 11px; }
+    .empty-inline { padding: 25px 18px; border-radius: 19px; background: white; border: 1px solid var(--line); text-align: center; }
+    .empty-inline strong { display: block; font-size: 15px; }
+    .empty-inline p { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 7px 0 0; }
+    .onboard-image { height: 48%; min-height: 260px; background: #dce9df; overflow: hidden; position: relative; }
+    .onboard-image img { width: 100%; height: 100%; object-fit: cover; }
+    .onboard-image:after { content: ""; position: absolute; inset: 50% 0 0; background: linear-gradient(transparent, rgba(15,43,38,.36)); }
+    .onboard-step { position: absolute; top: 22px; left: 22px; z-index: 2; border-radius: 100px; background: rgba(255,255,255,.92); padding: 8px 11px; color: var(--teal); font-size: 11px; font-weight: 850; letter-spacing: .08em; }
+    .onboard-skip { position: absolute; top: 18px; right: 18px; z-index: 2; border: 0; background: rgba(255,255,255,.92); color: var(--ink); padding: 10px 13px; border-radius: 100px; font-size: 12px; font-weight: 800; }
+    .onboard-copy { padding: 29px 25px 13px; flex: 1; }
+    .onboard-copy h1 { margin: 13px 0 14px; font-size: 34px; line-height: 1.07; letter-spacing: -.055em; }
+    .onboard-copy p { color: #60746e; line-height: 1.55; font-size: 15px; margin: 0; }
+    .dots { display: flex; gap: 6px; margin-top: 25px; }
+    .dots i { width: 7px; height: 7px; background: #c5d3ca; border-radius: 50%; }
+    .dots i.active { width: 22px; border-radius: 8px; background: var(--teal); }
+    .onboard-footer { padding: 12px 22px 25px; }
+    .study-header { padding: 12px 17px 9px; min-height: 62px; display: grid; grid-template-columns: 42px 1fr 52px; align-items: center; text-align: center; }
+    .study-header span { font-size: 13px; font-weight: 850; }
+    .undo-btn { background: transparent; border: 0; font-size: 12px; font-weight: 800; color: var(--teal); min-height: 42px; }
+    .progress-track { margin: 0 22px 14px; height: 5px; border-radius: 20px; background: #e0eae3; overflow: hidden; flex: 0 0 auto; }
+    .progress-track span { display: block; height: 100%; background: var(--teal); border-radius: inherit; transition: width .25s; }
+    .study-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 2px 18px 18px; overscroll-behavior: contain; }
+    .swipe-surface { position: relative; background: white; border: 1px solid var(--line); border-radius: 25px; padding: 12px; box-shadow: 0 12px 28px rgba(34,67,51,.08); touch-action: pan-y; user-select: none; transition: transform .2s ease; }
+    .swipe-surface.dragging { transition: none; }
+    .study-category { padding: 6px 6px 11px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 850; color: var(--teal); }
+    .photo-btn { width: 100%; padding: 0; border: 0; background: #e5ece8; display: block; position: relative; border-radius: 17px; overflow: hidden; aspect-ratio: 1.52; }
+    .photo-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-label { position: absolute; bottom: 9px; left: 9px; z-index: 1; border-radius: 6px; background: rgba(18,39,35,.68); color: white; font-size: 9px; padding: 5px 7px; letter-spacing: .1em; font-weight: 800; }
+    .photo-expand { position: absolute; top: 9px; right: 9px; background: rgba(255,255,255,.9); color: var(--ink); width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; }
+    .photo-expand svg { width: 17px; height: 17px; }
+    .image-error { display: none; height: 100%; padding: 35px 15px; text-align: center; align-items: center; justify-content: center; flex-direction: column; gap: 5px; }
+    .image-error strong { font-size: 15px; }
+    .image-error small { font-size: 12px; color: var(--muted); }
+    .photo-btn.broken img, .photo-btn.broken .photo-label, .photo-btn.broken .photo-expand { display: none; }
+    .photo-btn.broken .image-error { display: flex; }
+    .question { text-align: center; font-size: 17px; font-weight: 780; margin: 18px 7px 13px; letter-spacing: -.02em; }
+    .meaning-btn { min-height: 44px; border: 1px solid #c7ded3; background: #eff8f1; color: var(--teal); padding: 0 17px; border-radius: 14px; font-size: 13px; font-weight: 850; display: block; margin: 0 auto 12px; }
+    .answer { margin: 15px 4px 3px; border-top: 1px solid var(--line); padding: 16px 3px 3px; }
+    .answer-korean { font-size: 27px; font-weight: 850; letter-spacing: -.04em; margin-bottom: 4px; word-break: keep-all; }
+    .answer-meaning { font-size: 20px; font-weight: 800; color: var(--teal); letter-spacing: -.03em; }
+    .answer p { font-size: 13px; line-height: 1.53; color: #5f726c; margin: 10px 0 0; }
+    .keywords { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .keywords span { border-radius: 9px; padding: 7px 9px; background: #f2f5f1; font-size: 11px; color: #4c635c; }
+    .swipe-stamp { position: absolute; z-index: 3; top: 57px; padding: 8px 11px; border: 3px solid currentColor; border-radius: 9px; font-size: 18px; font-weight: 900; letter-spacing: .05em; opacity: 0; pointer-events: none; transform: rotate(-9deg); background: rgba(255,255,255,.9); }
+    .swipe-stamp.left { left: 23px; color: var(--orange); }
+    .swipe-stamp.right { right: 23px; color: var(--teal); transform: rotate(9deg); }
+    .study-actions { background: var(--paper); padding: 13px 18px max(18px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1fr; gap: 9px; flex: 0 0 auto; }
+    .choice-btn { border: 0; border-radius: 17px; min-height: 56px; padding: 5px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; line-height: 1.15; font-weight: 850; }
+    .choice-btn svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .choice-btn.left { background: var(--orange-soft); color: var(--orange); }
+    .choice-btn.right { background: var(--teal); color: white; }
+    /* Immersive, photo-first study deck. The portrait assets keep every Hangul sign legible. */
+    #app.is-immersive { background: #10231f; }
+    .is-immersive .language-bar { position: absolute; inset: 0 0 auto; z-index: 10; border: 0; background: transparent; padding: max(6px, env(safe-area-inset-top)) 18px 6px; }
+    .is-immersive .language-toggle { min-height: 38px; border-color: rgba(255,255,255,.36); background: rgba(18,34,30,.56); color: white; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .is-immersive .app-content { width: 100%; }
+    .study-page { position: relative; isolation: isolate; background: #10231f; color: white; overflow: hidden; }
+    .study-deck-next, .study-scroll, .study-page .swipe-surface { position: absolute; inset: 0; }
+    .study-deck-next { z-index: 0; overflow: hidden; background: linear-gradient(145deg,#2e7369,#142f2b); }
+    .study-deck-next img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .study-deck-next .next-finish { position: absolute; inset: 0; display: grid; place-items: center; color: white; font-size: 26px; font-weight: 850; text-align: center; }
+    .study-scroll { z-index: 1; padding: 0; overflow: hidden; touch-action: pan-y; }
+    .study-page .swipe-surface { border: 0; border-radius: 0; padding: 0; box-shadow: none; background: #19342d; overflow: hidden; touch-action: pan-y; }
+    .study-page .swipe-surface:after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg,rgba(9,25,23,.58) 0%,transparent 24%,transparent 47%,rgba(8,23,22,.10) 67%,rgba(8,23,22,.78) 100%); }
+    .study-page .study-photo { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; aspect-ratio: auto; background: #18322d; z-index: 0; }
+    .study-page .study-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .study-page .study-photo .photo-label { display: none; }
+    .study-page .study-photo .photo-expand { top: calc(170px + env(safe-area-inset-top)); right: 18px; width: 42px; height: 42px; border-radius: 14px; background: rgba(19,39,34,.60); color: white; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .study-page .study-photo .photo-expand svg { width: 19px; height: 19px; }
+    .study-page .study-photo.broken { background: #dce9df; color: var(--ink); }
+    .study-page .study-header { position: absolute; z-index: 5; top: calc(54px + env(safe-area-inset-top)); left: 0; right: 0; min-height: 50px; padding: 4px 18px; grid-template-columns: 44px 1fr 72px; color: white; }
+    .study-page .study-header .icon-btn { width: 44px; height: 44px; background: rgba(14,30,27,.45); color: white; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .study-page .study-header span { font-size: 14px; text-shadow: 0 1px 5px #142b24aa; }
+    .study-page .undo-btn { color: white; background: rgba(14,30,27,.45); border-radius: 13px; padding: 0 8px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .study-page .undo-btn:disabled { opacity: .55; }
+    .study-page .progress-track { position: absolute; z-index: 5; top: calc(112px + env(safe-area-inset-top)); left: 22px; right: 22px; margin: 0; height: 4px; background: rgba(255,255,255,.38); }
+    .study-page .progress-track span { background: white; box-shadow: 0 0 10px rgba(255,255,255,.5); }
+    .study-page .study-category { position: absolute; z-index: 2; top: calc(129px + env(safe-area-inset-top)); left: 17px; right: 17px; padding: 0; color: white; gap: 8px; text-shadow: 0 1px 5px #0d2520aa; }
+    .study-page .study-category span { display: inline-flex; align-items: center; min-height: 29px; padding: 0 10px; border: 1px solid rgba(255,255,255,.34); border-radius: 99px; background: rgba(13,33,29,.42); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .study-page .study-reveal { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 150px; text-align: center; }
+    .study-page .question { margin: 0 0 14px; color: white; font-size: 20px; font-weight: 850; text-shadow: 0 2px 12px rgba(0,0,0,.7); }
+    .study-page .meaning-btn { min-height: 50px; margin: 0 auto; border: 1px solid rgba(255,255,255,.78); border-radius: 99px; padding: 0 23px; color: var(--ink); background: rgba(255,255,255,.94); box-shadow: 0 7px 25px #091e1b3b; font-size: 14px; }
+    .study-page .answer { position: absolute; z-index: 2; left: 18px; right: 18px; bottom: 116px; max-height: min(35%, 290px); overflow-y: auto; margin: 0; border: 1px solid rgba(255,255,255,.8); border-radius: 25px; padding: 19px 20px 17px; color: var(--ink); background: rgba(251,253,248,.94); box-shadow: 0 18px 45px rgba(0,0,0,.19); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .study-page .answer-korean { font-size: 25px; }
+    .study-page .answer-meaning { font-size: 19px; }
+    .study-page .answer p { color: #4c635d; }
+    .study-page .swipe-stamp { top: 30%; font-size: 24px; border-radius: 13px; padding: 10px 14px; background: rgba(255,255,255,.94); }
+    .study-page .study-actions { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; padding: 10px 18px max(22px, env(safe-area-inset-bottom)); background: linear-gradient(transparent,rgba(9,28,25,.48) 18%,rgba(9,28,25,.82)); gap: 12px; }
+    .study-page .choice-btn { min-height: 64px; border-radius: 21px; font-size: 14px; box-shadow: 0 9px 25px rgba(0,0,0,.18); }
+    .study-page .choice-btn.left { color: #783d19; background: #fff5e8; }
+    .study-page .choice-btn.right { background: #e6f7ed; color: #0d594a; }
+    .study-page .choice-btn svg { width: 21px; height: 21px; }
+    @media (max-height: 700px) {
+      .study-page .study-photo .photo-expand { top: calc(154px + env(safe-area-inset-top)); }
+      .study-page .study-reveal { bottom: 134px; }
+      .study-page .answer { bottom: 104px; max-height: 38%; padding: 13px 16px; }
+      .study-page .answer-korean { font-size: 22px; }
+      .study-page .study-actions { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+      .study-page .choice-btn { min-height: 54px; }
+    }
+    .summary-badge { width: 92px; height: 92px; margin: 22px auto 20px; border-radius: 29px; transform: rotate(-7deg); background: #dff0e7; color: var(--teal); display: grid; place-items: center; font-size: 44px; box-shadow: 0 14px 35px #d3e8db; }
+    .summary-title { text-align: center; font-size: 33px; line-height: 1.08; letter-spacing: -.055em; margin: 0; }
+    .summary-sub { text-align: center; color: var(--muted); margin: 8px 0 25px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { background: white; border: 1px solid var(--line); border-radius: 20px; padding: 19px; }
+    .stat strong { font-size: 28px; display: block; letter-spacing: -.04em; }
+    .stat small { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .summary-actions { display: grid; gap: 10px; margin: 25px 0 15px; }
+    .review-intro { padding: 11px 22px 20px; }
+    .review-intro h1 { font-size: 31px; letter-spacing: -.05em; margin: 0 0 6px; }
+    .review-intro p { font-size: 13px; color: var(--muted); line-height: 1.45; margin: 0; }
+    .review-count { margin: 0 22px 12px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; }
+    .review-list { display: grid; gap: 9px; padding: 0 22px 22px; }
+    .review-row { border: 1px solid var(--line); border-radius: 18px; background: white; display: flex; padding: 8px; gap: 12px; align-items: center; text-align: left; width: 100%; }
+    .review-row img { width: 72px; height: 68px; object-fit: cover; border-radius: 11px; flex: 0 0 auto; }
+    .review-row strong { font-size: 16px; display: block; margin: 3px 0; }
+    .review-row small { color: var(--muted); font-size: 11px; }
+    .review-empty { padding: 65px 30px 20px; text-align: center; }
+    .empty-symbol { margin: auto; height: 84px; width: 84px; border-radius: 26px; background: var(--teal-soft); display: grid; place-items: center; color: var(--teal); font-size: 38px; }
+    .review-empty h2 { font-size: 23px; letter-spacing: -.035em; margin: 21px 0 7px; }
+    .review-empty p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .settings-list { display: grid; gap: 10px; padding: 13px 22px; }
+    .settings-row { width: 100%; min-height: 62px; border: 1px solid var(--line); background: white; border-radius: 16px; padding: 15px 17px; text-align: left; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 780; color: var(--ink); }
+    .settings-hint { margin: 15px 25px; color: var(--muted); line-height: 1.55; font-size: 12px; }
+    .detail-body { padding: 10px 20px 20px; }
+    .detail-body .photo-btn { margin-top: 12px; }
+    .detail-body .answer { margin-top: 22px; }
+    .detail-footer { padding: 12px 20px max(20px, env(safe-area-inset-bottom)); }
+    .modal-layer { position: absolute; inset: 0; z-index: 20; background: rgba(16,37,32,.52); display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .dialog { width: 100%; max-width: 330px; background: white; border-radius: 25px; padding: 25px; box-shadow: 0 25px 60px #0c2a2140; }
+    .dialog h2 { font-size: 23px; letter-spacing: -.04em; margin: 0 0 9px; }
+    .dialog p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 23px; }
+    .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .dialog-actions button { min-height: 47px; border: 0; border-radius: 13px; font-weight: 800; }
+    .dialog-actions .cancel { color: var(--ink); background: #f0f3f0; }
+    .dialog-actions .confirm { color: white; background: var(--teal); }
+    .dialog-actions .danger { background: #ad4a36; }
+    .zoom-layer { position: absolute; inset: 0; z-index: 25; background: #0d1917; color: white; display: flex; flex-direction: column; }
+    .zoom-top { padding: 13px 17px; display: flex; justify-content: space-between; align-items: center; font-weight: 750; font-size: 13px; }
+    .zoom-top button, .zoom-controls button { border: 1px solid #ffffff45; background: #ffffff1b; color: white; border-radius: 12px; width: 42px; height: 42px; font-size: 18px; }
+    .zoom-viewport { flex: 1; min-height: 0; overflow: hidden; display: grid; place-items: center; touch-action: none; cursor: grab; }
+    .zoom-viewport img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; user-select: none; pointer-events: none; }
+    .zoom-controls { display: flex; justify-content: center; gap: 12px; padding: 12px 0 25px; align-items: center; }
+    .zoom-controls span { color: #ccdbd4; font-size: 11px; margin: 0 4px; }
+    @media (max-width: 820px) {
+      .desktop-stage { display: block; padding: 0; min-height: 100dvh; }
+      .presentation { display: none; }
+      .phone-frame { width: 100%; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .phone-frame:after { display: none; }
+      .language-bar { padding-top: max(5px, env(safe-area-inset-top)); }
+      .language-setup-screen { padding-top: env(safe-area-inset-top); }
+    }
+    @media (max-height: 680px) {
+      .language-picker-image { height: 120px; min-height: 120px; }
+      .language-picker-copy { padding-top: 15px; }
+      .language-picker-copy h1 { font-size: 26px; margin: 6px 0 7px; }
+      .language-options { padding-top: 8px; padding-bottom: 10px; gap: 7px; }
+      .language-option { min-height: 49px; }
+      .language-picker-footer { padding-top: 7px; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *:before, *:after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="desktop-stage">
+    <aside class="presentation">
+      <div class="eyebrow" id="desktopEyebrow">인터랙티브 모바일 프로토타입</div>
+      <h1 id="desktopTitle">간판으로<br><em>도시 읽기.</em></h1>
+      <p id="desktopBody">거리에서 마주치는 한국어 간판을 보고 뜻을 확인한 뒤, 좌우로 넘기며 익히는 학습 앱입니다.</p>
+      <div class="demo-note">
+        <strong id="desktopTry">오른쪽 화면을 사용해 보세요</strong>
+        <div id="desktopSwipe">카드를 스와이프하거나 <span class="kbd">←</span> <span class="kbd">→</span> 키로 넘길 수 있습니다.</div>
+        <div id="desktopSpace"><span class="kbd">Space</span> 키를 누르면 뜻이 열립니다.</div>
+        <div id="desktopSample">예시 간판 사진 6장을 포함한 디자인 체험판입니다.</div>
+      </div>
+    </aside>
+    <div class="phone-frame"><div id="app"></div></div>
+  </div>
+  <script>
+    (function () {
+      "use strict";
+      var STORAGE_KEY = "sign-by-sign-prototype-v1";
+      var categories = [
+        { id: "all", label: { ko: "모든 간판", en: "All signs", ja: "すべての看板" } },
+        { id: "food_cafe", label: { ko: "음식·카페", en: "Food & cafés", ja: "飲食・カフェ" } },
+        { id: "shopping_daily", label: { ko: "쇼핑·생활", en: "Shopping & daily life", ja: "買い物・暮らし" } },
+        { id: "transport_directions", label: { ko: "교통·길찾기", en: "Transport & directions", ja: "交通・道案内" } },
+        { id: "stays", label: { ko: "숙박", en: "Stays", ja: "宿泊" } },
+        { id: "health_safety", label: { ko: "건강·안전", en: "Health & safety", ja: "健康・安全" } },
+        { id: "opening_notices", label: { ko: "영업 안내", en: "Opening hours & notices", ja: "営業案内" } }
+      ];
+      var cards = [
+        { id: "cafe", category: "food_cafe", difficulty: 1, image: "assets/cafe.png", portrait: "assets/cafe-portrait.png", korean: "카페", meaning: "Café", explanation: "A place to buy coffee and other drinks, often with a place to sit.", keywords: [["카페", "café"]] },
+        { id: "laundry", category: "shopping_daily", difficulty: 2, image: "assets/laundry.png", portrait: "assets/laundry-portrait.png", korean: "세탁소", meaning: "Laundry or dry cleaner", explanation: "Bring clothes here to have them washed or professionally cleaned.", keywords: [["세탁", "laundry"]] },
+        { id: "subway", category: "transport_directions", difficulty: 1, image: "assets/subway.png", portrait: "assets/subway-portrait.png", korean: "지하철", meaning: "Subway", explanation: "Follow this sign to find a subway station or entrance.", keywords: [["지하", "underground"], ["철", "rail"]] },
+        { id: "guesthouse", category: "stays", difficulty: 3, image: "assets/guesthouse.png", portrait: "assets/guesthouse-portrait.png", korean: "게스트하우스", meaning: "Guesthouse", explanation: "A small place to stay, often with shared spaces for travelers.", keywords: [["하우스", "house"]] },
+        { id: "pharmacy", category: "health_safety", difficulty: 1, image: "assets/pharmacy.png", portrait: "assets/pharmacy-portrait.png", korean: "약국", meaning: "Pharmacy", explanation: "Look for this sign when you need medicine or basic health supplies.", keywords: [["약", "medicine"]] },
+        { id: "open", category: "opening_notices", difficulty: 2, image: "assets/open.png", portrait: "assets/open-portrait.png", korean: "영업중", meaning: "Open now", explanation: "This notice means the shop is currently open for customers.", keywords: [["영업", "business"], ["중", "in progress"]] }
+      ];
+      var localizedCards = {
+        cafe: {
+          ko: { meaning: "커피·음료를 파는 곳", explanation: "커피나 다른 음료를 사서 마시고 잠시 쉴 수 있는 곳이에요.", keywords: [["카페", "음료를 파는 곳"]] },
+          ja: { meaning: "カフェ", explanation: "コーヒーや飲み物を買い、店内で休める場所です。", keywords: [["카페", "カフェ"]] }
+        },
+        laundry: {
+          ko: { meaning: "옷을 세탁하는 곳", explanation: "옷을 맡겨 세탁하거나 드라이클리닝을 받을 수 있어요.", keywords: [["세탁", "옷을 빠는 일"]] },
+          ja: { meaning: "クリーニング店", explanation: "衣類の洗濯やドライクリーニングを頼めます。", keywords: [["세탁", "洗濯"]] }
+        },
+        subway: {
+          ko: { meaning: "지하철역 안내", explanation: "지하철역이나 입구를 찾을 때 이 표시를 따라가세요.", keywords: [["지하", "땅 아래"], ["철", "철도"]] },
+          ja: { meaning: "地下鉄", explanation: "地下鉄の駅や入口を探すとき、この表示に従います。", keywords: [["지하", "地下"], ["철", "鉄道"]] }
+        },
+        guesthouse: {
+          ko: { meaning: "여행자 숙소", explanation: "여행자가 묵을 수 있는 작은 숙소예요. 공용 공간이 있을 수도 있어요.", keywords: [["하우스", "집"]] },
+          ja: { meaning: "ゲストハウス", explanation: "旅行者向けの小さな宿泊施設です。共用スペースがあることもあります。", keywords: [["하우스", "ハウス"]] }
+        },
+        pharmacy: {
+          ko: { meaning: "약을 파는 곳", explanation: "약이나 기본적인 건강용품이 필요할 때 찾는 곳이에요.", keywords: [["약", "의약품"]] },
+          ja: { meaning: "薬局", explanation: "薬や基本的な衛生用品が必要なときに探す表示です。", keywords: [["약", "薬"]] }
+        },
+        open: {
+          ko: { meaning: "현재 영업 중", explanation: "가게가 지금 손님을 받고 있다는 뜻이에요.", keywords: [["영업", "가게 운영"], ["중", "진행 중"]] },
+          ja: { meaning: "営業中", explanation: "この店が現在営業していることを示します。", keywords: [["영업", "営業"], ["중", "〜中"]] }
+        }
+      };
+      var languages = [
+        { code: "ko", name: "한국어" },
+        { code: "en", name: "English" },
+        { code: "ja", name: "日本語" }
+      ];
+      var messages = {
+        language: { ko: "언어", en: "Language", ja: "言語" },
+        mainNavigation: { ko: "주 메뉴", en: "Main navigation", ja: "メインメニュー" },
+        back: { ko: "뒤로", en: "Back", ja: "戻る" },
+        chooseLanguage: { ko: "사용할 언어를 선택하세요", en: "Choose your language", ja: "使用する言語を選んでください" },
+        languageHint: { ko: "나중에 화면 위쪽에서 언제든 바꿀 수 있어요.", en: "You can change this anytime at the top of the screen.", ja: "画面上部からいつでも変更できます。" },
+        desktopEyebrow: { ko: "인터랙티브 모바일 프로토타입", en: "INTERACTIVE MOBILE PROTOTYPE", ja: "操作できるモバイル体験版" },
+        desktopTitle: { ko: "간판으로<br><em>도시 읽기.</em>", en: "Read the<br><em>city in signs.</em>", ja: "看板から<br><em>街を読もう。</em>" },
+        desktopBody: { ko: "거리에서 마주치는 한국어 간판을 보고 뜻을 확인한 뒤, 좌우로 넘기며 익히는 학습 앱입니다.", en: "Learn Korean from real-world signs: see one, reveal its meaning, then swipe left or right.", ja: "街で見かける韓国語の看板を見て意味を確認し、左右にスワイプして学ぶアプリです。" },
+        desktopTry: { ko: "오른쪽 화면을 사용해 보세요", en: "Try the screen on the right", ja: "右側の画面をお試しください" },
+        desktopSwipe: { ko: "카드를 스와이프하거나 <span class=\"kbd\">←</span> <span class=\"kbd\">→</span> 키로 넘길 수 있습니다.", en: "Swipe the card or use <span class=\"kbd\">←</span> <span class=\"kbd\">→</span> keys.", ja: "カードをスワイプするか、<span class=\"kbd\">←</span> <span class=\"kbd\">→</span> キーを使えます。" },
+        desktopSpace: { ko: "<span class=\"kbd\">Space</span> 키를 누르면 뜻이 열립니다.", en: "Press <span class=\"kbd\">Space</span> to reveal the meaning.", ja: "<span class=\"kbd\">Space</span> キーで意味を表示できます。" },
+        desktopSample: { ko: "예시 간판 사진 6장을 포함한 디자인 체험판입니다.", en: "This design prototype includes six illustrative sign photos.", ja: "看板のイメージ写真6枚を含むデザイン体験版です。" },
+        continue: { ko: "계속", en: "Continue", ja: "次へ" },
+        skip: { ko: "건너뛰기", en: "Skip", ja: "スキップ" },
+        next: { ko: "다음", en: "Next", ja: "次へ" },
+        startLearning: { ko: "학습 시작", en: "Start learning", ja: "学習を始める" },
+        onboardFirstTitle: { ko: "거리의 한국어를<br>읽어보세요.", en: "Read Korean in<br>the real world.", ja: "街の韓国語を<br>読んでみよう。" },
+        onboardFirstBody: { ko: "한국에서 마주칠 만한 간판으로 실용적인 단어를 익혀요.", en: "Learn useful words from signs you might see in Korea.", ja: "韓国で見かける看板から、役立つ言葉を学びます。" },
+        onboardSecondTitle: { ko: "보고, 뜻을 열고,<br>스와이프하세요.", en: "Guess, reveal,<br>swipe.", ja: "見て、意味を確認し、<br>スワイプ。" },
+        onboardSecondBody: { ko: "간판을 보고 뜻을 예상한 뒤 ‘뜻 보기’를 누르세요. 알면 오른쪽, 다시 보고 싶으면 왼쪽으로 넘기세요.", en: "Look at the sign, then tap Show meaning. Swipe right for Got it or left for Practice again.", ja: "看板を見て意味を予想し、「意味を見る」をタップ。分かったら右、復習したいなら左へスワイプします。" },
+        learn: { ko: "학습", en: "Learn", ja: "学習" },
+        review: { ko: "복습", en: "Review", ja: "復習" },
+        settings: { ko: "설정", en: "Settings", ja: "設定" },
+        viewResults: { ko: "학습 결과 보기", en: "View session results", ja: "学習結果を見る" },
+        continueSession: { ko: "이어서 학습하기", en: "Continue your session", ja: "学習を再開" },
+        choicesSaved: { ko: "선택 내용이 저장됐어요", en: "Your choices are saved", ja: "選択内容を保存しました" },
+        of: { ko: "{a}/{b}", en: "{a} of {b}", ja: "{a} / {b}" },
+        view: { ko: "보기", en: "View", ja: "見る" },
+        heroLabel: { ko: "읽을 거리가 가득한 도시", en: "A CITY TO READ", ja: "街を読もう" },
+        heroTitle: { ko: "간판 하나로<br>도시를 읽어요.", en: "Every sign<br>has a story.", ja: "看板から<br>街が見えてくる。" },
+        heroBody: { ko: "거리에서 보고, 뜻을 알고, 실제로 써보세요.", en: "See it on the street. Understand it for real.", ja: "街で見かける言葉の意味を知ろう。" },
+        chooseScene: { ko: "장면 선택", en: "Choose a scene", ja: "場面を選ぶ" },
+        newSigns: { ko: "새 간판 {n}개", en: "{n} new signs", ja: "新しい看板 {n}枚" },
+        newShort: { ko: "새 카드 {n}개", en: "{n} new", ja: "新着 {n}枚" },
+        sessionSigns: { ko: "이번 세션의 간판 {n}개", en: "{n} signs in this session", ja: "今回の看板 {n}枚" },
+        prototypeNote: { ko: "체험용 디자인 · 예시 간판 6개", en: "Interactive prototype · six sample signs", ja: "体験用デザイン · サンプル看板6枚" },
+        allSeen: { ko: "모든 간판을 봤어요!", en: "You've seen every sign!", ja: "すべての看板を見ました！" },
+        keepFresh: { ko: "복습으로 기억을 이어가세요.", en: "Keep them fresh with a quick review.", ja: "復習して記憶を定着させましょう。" },
+        noNewCategory: { ko: "이 분류에는 새 간판이 없어요.", en: "No new signs in this category.", ja: "このカテゴリーに新しい看板はありません。" },
+        chooseOther: { ko: "다른 분류를 골라 계속 학습하세요.", en: "Choose another category to keep learning.", ja: "ほかのカテゴリーを選んで学習しましょう。" },
+        chooseAnother: { ko: "다른 분류 선택", en: "Choose another category", ja: "ほかのカテゴリーを選ぶ" },
+        reviewSigns: { ko: "간판 복습하기", en: "Review signs", ja: "看板を復習" },
+        saveClose: { ko: "저장하고 닫기", en: "Save and close", ja: "保存して閉じる" },
+        undo: { ko: "되돌리기", en: "Undo", ja: "元に戻す" },
+        photoCard: { ko: "사진 카드", en: "PHOTO CARD", ja: "写真カード" },
+        illustrativePhoto: { ko: "예시 이미지", en: "ILLUSTRATIVE PHOTO", ja: "イメージ写真" },
+        enlargePhoto: { ko: "간판 사진 확대", en: "Enlarge sign photo", ja: "看板写真を拡大" },
+        photoAlt: { ko: "한국어 간판 예시 사진. 누르면 확대됩니다.", en: "Illustrative Korean sign photo; tap to enlarge", ja: "韓国語の看板イメージ。タップすると拡大します。" },
+        imageUnavailable: { ko: "사진을 불러올 수 없어요", en: "Image unavailable", ja: "写真を表示できません" },
+        imageStillReveal: { ko: "뜻은 계속 확인할 수 있어요.", en: "You can still reveal the meaning.", ja: "意味は引き続き確認できます。" },
+        question: { ko: "이 간판은 무슨 뜻일까요?", en: "What does this sign mean?", ja: "この看板はどういう意味？" },
+        showMeaning: { ko: "뜻 보기", en: "Show meaning", ja: "意味を見る" },
+        practiceAgain: { ko: "다시 볼래요", en: "Practice again", ja: "もう一度練習" },
+        gotIt: { ko: "알겠어요", en: "Got it", ja: "分かった" },
+        stampPractice: { ko: "다시 볼래요", en: "PRACTICE", ja: "もう一度" },
+        stampGotIt: { ko: "알겠어요", en: "GOT IT", ja: "分かった" },
+        sessionComplete: { ko: "학습 완료!", en: "Session<br>complete.", ja: "学習完了！" },
+        signsSeen: { ko: "간판 {n}개를 봤어요", en: "{n} signs seen", ja: "看板を{n}枚見ました" },
+        stillPractice: { ko: "복습할 간판 {n}개", en: "{n} signs still need practice", ja: "復習する看板 {n}枚" },
+        reviewAgain: { ko: "다시 복습하기", en: "Review again", ja: "もう一度復習" },
+        backReview: { ko: "복습 목록으로", en: "Back to Review", ja: "復習一覧へ" },
+        learnMore: { ko: "새 간판 더 보기", en: "Learn more signs", ja: "新しい看板を見る" },
+        backLearn: { ko: "학습 홈으로", en: "Back to Learn", ja: "学習ホームへ" },
+        undoLast: { ko: "마지막 선택 되돌리기", en: "Undo last choice", ja: "最後の選択を戻す" },
+        reviewHero: { ko: "한 번 더 보면 익숙해져요.", en: "Worth a second look.", ja: "もう一度見ると覚えられる。" },
+        reviewDesc: { ko: "다시 연습하고 싶다고 표시한 간판이에요.", en: "Signs you marked for more practice.", ja: "もう一度練習したいと選んだ看板です。" },
+        signsCount: { ko: "간판 {n}개", en: "{n} signs", ja: "看板 {n}枚" },
+        newestFirst: { ko: "최근 선택순", en: "NEWEST FIRST", ja: "新しい順" },
+        tapDetails: { ko: "눌러서 자세히 보기", en: "Tap to see details", ja: "タップして詳細を見る" },
+        startReviewing: { ko: "복습 시작", en: "Start reviewing", ja: "復習を始める" },
+        nothingReview: { ko: "아직 복습할 간판이 없어요.", en: "Nothing to review yet.", ja: "復習する看板はまだありません。" },
+        swipeLeftAppears: { ko: "왼쪽으로 넘긴 간판이 여기에 모여요.", en: "Signs you swipe left will appear here.", ja: "左にスワイプした看板がここに表示されます。" },
+        signDetails: { ko: "간판 자세히 보기", en: "Sign details", ja: "看板の詳細" },
+        howItWorks: { ko: "사용 방법", en: "How it works", ja: "使い方" },
+        resetProgress: { ko: "학습 기록 초기화", en: "Reset learning progress", ja: "学習記録をリセット" },
+        about: { ko: "앱 정보", en: "About", ja: "アプリについて" },
+        settingsHint: { ko: "학습 기록은 이 브라우저에만 저장돼요. 초기화하거나 브라우저 데이터를 지우면 기록이 사라집니다. 이 체험판에는 AI로 만든 예시 간판 사진 6장을 사용했어요.", en: "Your choices are saved only in this browser. Resetting or clearing browser data removes your progress. This prototype uses six AI-generated illustrative sign photos.", ja: "学習記録はこのブラウザーにのみ保存されます。リセットやブラウザーデータの削除で記録は消えます。この体験版にはAI生成の看板イメージを6枚使用しています。" },
+        resetTitle: { ko: "학습 기록을 초기화할까요?", en: "Reset your progress?", ja: "学習記録をリセットしますか？" },
+        resetBody: { ko: "이 기기의 학습·복습 기록이 삭제됩니다. 되돌릴 수 없어요.", en: "This removes your learning and review history on this device. You can't undo this.", ja: "この端末の学習・復習記録を削除します。元には戻せません。" },
+        cancel: { ko: "취소", en: "Cancel", ja: "キャンセル" },
+        close: { ko: "닫기", en: "Close", ja: "閉じる" },
+        aboutTitle: { ko: "Sign by Sign 소개", en: "About Sign by Sign", ja: "Sign by Sign について" },
+        aboutBody: { ko: "PRD·SRS를 바탕으로 만든 인터랙티브 디자인 체험판입니다. AI로 만든 예시 간판 사진 6장이 들어 있으며 계정·카메라·인터넷 연결이 필요하지 않습니다.", en: "Interactive design prototype based on the PRD/SRS. Includes six AI-generated illustrative sign photos. No account, camera, or network connection is required.", ja: "PRD・SRSに基づく操作可能なデザイン体験版です。AI生成の看板イメージ6枚を収録。アカウント、カメラ、ネット接続は不要です。" },
+        newSessionTitle: { ko: "새 세션을 시작할까요?", en: "Start a new session?", ja: "新しい学習を始めますか？" },
+        newSessionBody: { ko: "진행 중인 세션이 교체됩니다. 이미 선택한 간판의 기록은 유지돼요.", en: "Your current session will be replaced. Your completed choices will stay saved.", ja: "進行中の学習を切り替えます。選択済みの記録は残ります。" },
+        startNew: { ko: "새로 시작", en: "Start new", ja: "新しく始める" },
+        signPhotoIllustrative: { ko: "간판 사진 · 예시 이미지", en: "Sign photo · illustrative", ja: "看板写真 · イメージ" },
+        closePhoto: { ko: "사진 닫기", en: "Close photo", ja: "写真を閉じる" },
+        enlargedPhoto: { ko: "확대한 간판 사진", en: "Enlarged sign photo", ja: "拡大した看板写真" },
+        zoomOut: { ko: "축소", en: "Zoom out", ja: "縮小" },
+        zoomIn: { ko: "확대", en: "Zoom in", ja: "拡大" },
+        pinchHint: { ko: "손가락으로 확대하거나 버튼을 누르세요", en: "PINCH OR USE BUTTONS", ja: "ピンチまたはボタンで拡大" }
+      };
+      var app = document.getElementById("app");
+      var state = loadState();
+      var screen = !state.languageChosen ? "language-setup" : (state.onboarded ? "home" : "onboarding");
+      var onboardStep = 0;
+      var onboardReturn = "home";
+      var settingsReturn = "home";
+      var languageMenuOpen = false;
+      var detailId = null;
+      var detailRevealed = false;
+      var modal = null;
+      var zoomCard = null;
+      var zoomScale = 1;
+      var zoomX = 0;
+      var zoomY = 0;
+      var suppressZoomUntil = 0;
+      var choiceLocked = false;
+
+      function freshState() {
+        return { language: "ko", languageChosen: false, onboarded: false, selectedCategory: "all", progress: {}, activeSession: null, orderSeed: Math.floor(Math.random() * 1000000) };
+      }
+      function loadState() {
+        try {
+          var parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (!parsed || typeof parsed !== "object") return freshState();
+          var base = freshState();
+          base.language = languages.some(function (item) { return item.code === parsed.language; }) ? parsed.language : "ko";
+          base.languageChosen = !!parsed.languageChosen;
+          base.onboarded = !!parsed.onboarded;
+          base.selectedCategory = categories.some(function (c) { return c.id === parsed.selectedCategory; }) ? parsed.selectedCategory : "all";
+          base.progress = parsed.progress && typeof parsed.progress === "object" ? parsed.progress : {};
+          base.activeSession = parsed.activeSession && Array.isArray(parsed.activeSession.cardIds) ? parsed.activeSession : null;
+          base.orderSeed = Number.isFinite(parsed.orderSeed) ? parsed.orderSeed : base.orderSeed;
+          return base;
+        } catch (e) { return freshState(); }
+      }
+      function save() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch (e) { console.warn("Progress could not be saved", e); }
+      }
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
+      }
+      function t(key, values) {
+        var entry = messages[key] || {};
+        var value = entry[state.language] || entry.en || key;
+        return value.replace(/\{(\w+)\}/g, function (_, name) { return values && values[name] !== undefined ? String(values[name]) : ""; });
+      }
+      function currentLanguageName() {
+        var entry = languages.find(function (item) { return item.code === state.language; });
+        return entry ? entry.name : "한국어";
+      }
+      function cardContent(card) {
+        return state.language === "en" ? card : ((localizedCards[card.id] || {})[state.language] || card);
+      }
+      function findCard(id) { return cards.find(function (c) { return c.id === id; }); }
+      function categoryLabel(id) { var c = categories.find(function (item) { return item.id === id; }); return c ? c.label[state.language] : categories[0].label[state.language]; }
+      function icon(name) {
+        var paths = {
+          home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-7h6v7"/>',
+          bookmark: '<path d="M5 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v18l-7-5-7 5z"/>',
+          settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.86 1.86-.06-.06A1.7 1.7 0 0 0 16 18.4a1.7 1.7 0 0 0-1 1.57V20h-2.6v-.03A1.7 1.7 0 0 0 11.4 18.4a1.7 1.7 0 0 0-1.88.34l-.06.06L7.6 16.94l.06-.06A1.7 1.7 0 0 0 8 15a1.7 1.7 0 0 0-1.57-1H6.4v-2.6h.03A1.7 1.7 0 0 0 8 10.4a1.7 1.7 0 0 0-.34-1.88L7.6 8.46 9.46 6.6l.06.06A1.7 1.7 0 0 0 11.4 7a1.7 1.7 0 0 0 1-1.57V5.4H15v.03A1.7 1.7 0 0 0 16 7a1.7 1.7 0 0 0 1.88-.34l.06-.06 1.86 1.86-.06.06A1.7 1.7 0 0 0 19.4 10.4a1.7 1.7 0 0 0 1.57 1h.03V14h-.03A1.7 1.7 0 0 0 19.4 15z"/>',
+          check: '<path d="m5 12 4 4L19 6"/>',
+          close: '<path d="M5 5 19 19M19 5 5 19"/>',
+          expand: '<path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>',
+          globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.7 5.5 3.7 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.7 5.5-3.7 9S9.5 18.5 12 21"/>',
+          arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+          back: '<path d="m15 18-6-6 6-6"/>',
+          spark: '<path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z"/><path d="m19 17 .5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5z"/>'
+        };
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || paths.spark) + '</svg>';
+      }
+      function languageOptionsMarkup(action) {
+        return '<div class="language-options" role="group" aria-label="' + escapeHtml(t("language")) + '">' +
+          languages.map(function (item) {
+            var selected = state.language === item.code;
+            return '<button class="language-option ' + (selected ? "selected" : "") + '" data-action="' + action +
+              '" data-lang="' + item.code + '" aria-pressed="' + selected + '"><span lang="' + item.code + '">' +
+              item.name + '</span><span class="radio" aria-hidden="true"></span></button>';
+          }).join("") + '</div>';
+      }
+      function renderLanguageSetup() {
+        return '<div class="screen language-setup-screen"><div class="language-picker-image"><img src="assets/cafe.png" alt="' + escapeHtml(t("photoAlt")) + '"></div>' +
+          '<div class="language-picker-copy"><span class="small-caps">SIGN BY SIGN</span><h1>' + t("chooseLanguage") +
+          '</h1><p>' + t("languageHint") + '</p></div>' +
+          languageOptionsMarkup("setup-language") +
+          '<div class="language-picker-footer"><button class="primary-btn" data-action="confirm-language">' + t("continue") +
+          ' ' + icon("arrow") + '</button></div></div>';
+      }
+      function renderLanguageBar() {
+        return '<div class="language-bar"><button class="language-toggle" data-action="language-menu" aria-label="' +
+          escapeHtml(t("language") + ": " + currentLanguageName()) + '">' + icon("globe") +
+          '<span>' + currentLanguageName() + '</span><span aria-hidden="true">⌄</span></button></div>';
+      }
+      function renderLanguageMenu() {
+        if (!languageMenuOpen) return "";
+        return '<div class="modal-layer"><div class="language-menu" role="dialog" aria-modal="true" aria-label="' +
+          escapeHtml(t("chooseLanguage")) + '"><h2>' + t("chooseLanguage") + '</h2><p>' + t("languageHint") + '</p>' +
+          languageOptionsMarkup("switch-language") +
+          '<button class="secondary-btn language-menu-close" data-action="language-close">' + t("close") +
+          '</button></div></div>';
+      }
+      function mainNav(active) {
+        return '<nav class="main-nav" aria-label="' + escapeHtml(t("mainNavigation")) + '">' +
+          '<button class="nav-item ' + (active === "home" ? "active" : "") + '" data-action="nav-home">' + icon("home") + t("learn") + '</button>' +
+          '<button class="nav-item ' + (active === "review" ? "active" : "") + '" data-action="nav-review">' + icon("bookmark") + t("review") + '</button></nav>';
+      }
+      function settingsButton() { return '<button class="icon-btn" data-action="settings" aria-label="' + escapeHtml(t("settings")) + '">' + icon("settings") + '</button>'; }
+      function resumeBanner() {
+        var s = state.activeSession;
+        if (!s) return "";
+        var isSummary = s.phase === "results_pending";
+        return '<div class="resume"><div class="resume-icon">' + icon(isSummary ? "spark" : "bookmark") + '</div>' +
+          '<div class="resume-info"><strong>' + t(isSummary ? "viewResults" : "continueSession") + '</strong><small>' +
+          (isSummary ? t("choicesSaved") : t("of", { a: s.index + 1, b: s.cardIds.length }) + " · " + t(s.mode === "learn" ? "learn" : "review")) +
+          '</small></div><button data-action="resume">' + t(isSummary ? "view" : "continue") + '</button></div>';
+      }
+      function unseenCount(category) {
+        return cards.filter(function (c) {
+          return (!category || category === "all" || c.category === category) && !state.progress[c.id];
+        }).length;
+      }
+      function reviewCards() {
+        return cards.filter(function (c) { return state.progress[c.id] && state.progress[c.id].status === "practice"; })
+          .sort(function (a, b) { return (state.progress[b.id].lastChoiceAt || 0) - (state.progress[a.id].lastChoiceAt || 0); });
+      }
+      function photoMarkup(card, extraClass) {
+        var src = extraClass === "study-photo" ? (card.portrait || card.image) : card.image;
+        return '<button class="photo-btn ' + (extraClass || "") + '" data-action="zoom" data-id="' + escapeHtml(card.id) + '" aria-label="' + escapeHtml(t("enlargePhoto")) + '">' +
+          '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(t("photoAlt")) + '" draggable="false">' +
+          '<span class="photo-label">' + t("illustrativePhoto") + '</span><span class="photo-expand">' + icon("expand") + '</span>' +
+          '<span class="image-error"><strong>' + t("imageUnavailable") + '</strong><small>' + t("imageStillReveal") + '</small></span></button>';
+      }
+      function answerMarkup(card) {
+        var content = cardContent(card);
+        return '<div class="answer" aria-live="polite"><div class="answer-korean" lang="ko">' + escapeHtml(card.korean) + '</div>' +
+          '<div class="answer-meaning" lang="' + state.language + '">' + escapeHtml(content.meaning) + '</div><p>' + escapeHtml(content.explanation) + '</p>' +
+          (content.keywords.length ? '<div class="keywords">' + content.keywords.map(function (k) { return '<span><b lang="ko">' + escapeHtml(k[0]) + '</b> · ' + escapeHtml(k[1]) + '</span>'; }).join("") + '</div>' : "") +
+          '</div>';
+      }
+      function renderOnboarding() {
+        var first = onboardStep === 0;
+        return '<div class="screen"><div class="onboard-image"><img src="' + (first ? "assets/cafe.png" : "assets/pharmacy.png") + '" alt="' + escapeHtml(t("photoAlt")) + '">' +
+          '<span class="onboard-step">' + t("of", { a: first ? 1 : 2, b: 2 }) + '</span><button class="onboard-skip" data-action="onboard-skip">' + t("skip") + '</button></div>' +
+          '<div class="onboard-copy"><span class="small-caps">SIGN BY SIGN</span><h1>' +
+          t(first ? "onboardFirstTitle" : "onboardSecondTitle") + '</h1><p>' +
+          t(first ? "onboardFirstBody" : "onboardSecondBody") +
+          '</p><div class="dots"><i class="' + (first ? "active" : "") + '"></i><i class="' + (!first ? "active" : "") + '"></i></div></div>' +
+          '<div class="onboard-footer"><button class="primary-btn" data-action="' + (first ? "onboard-next" : "onboard-done") + '">' +
+          t(first ? "next" : "startLearning") + ' ' + icon("arrow") + '</button></div></div>';
+      }
+      function renderHome() {
+        var count = unseenCount(state.selectedCategory);
+        var total = unseenCount("all");
+        var categoryHtml = categories.map(function (c) {
+          var selected = state.selectedCategory === c.id;
+          return '<button class="category-card ' + (c.id === "all" ? "wide " : "") + (selected ? "selected" : "") +
+            '" data-action="category" data-category="' + c.id + '" aria-pressed="' + selected + '">' +
+            '<strong>' + escapeHtml(categoryLabel(c.id)) + '</strong>' +
+            (c.id === "all" ? '<span class="count-pill">' + t("newShort", { n: unseenCount(c.id) }) + '</span>' : '<small>' + t("newShort", { n: unseenCount(c.id) }) + '</small>') +
+            '</button>';
+        }).join("");
+        var bottom = count > 0 ?
+          '<div class="bottom-cta"><button class="primary-btn" data-action="start-learn">' + t("startLearning") + ' ' + icon("arrow") + '</button><div style="text-align:center;color:var(--muted);font-size:12px;margin-top:9px;">' + t("sessionSigns", { n: Math.min(10, count) }) + '</div></div>' :
+          '<div class="bottom-cta"><div class="empty-inline"><strong>' + t(total === 0 ? "allSeen" : "noNewCategory") + '</strong><p>' +
+          t(total === 0 ? "keepFresh" : "chooseOther") + '</p></div>' +
+          '<button class="secondary-btn" style="margin-top:10px;" data-action="' + (total === 0 ? "nav-review" : "category-all") + '">' +
+          t(total === 0 ? "reviewSigns" : "chooseAnother") + '</button></div>';
+        return '<div class="screen"><header class="screen-header"><div class="brand"><span class="brand-mark">ㅅ</span>Sign by Sign</div>' + settingsButton() + '</header>' +
+          '<div class="screen-scroll"><section class="home-hero"><span class="small-caps">' + t("heroLabel") + '</span><h1>' + t("heroTitle") + '</h1><p>' + t("heroBody") + '</p></section>' +
+          resumeBanner() +
+          '<section class="pad"><div class="section-head"><h2>' + t("chooseScene") + '</h2><span>' + t("newSigns", { n: total }) + '</span></div><div class="category-grid">' +
+          categoryHtml + '</div><p style="font-size:11px;color:var(--muted);margin:13px 0 0;">' + t("prototypeNote") + '</p></section>' +
+          bottom + '</div>' + mainNav("home") + '</div>';
+      }
+      function renderStudy() {
+        var s = state.activeSession;
+        if (!s) { screen = "home"; return renderHome(); }
+        if (s.phase === "results_pending") { screen = "summary"; return renderSummary(); }
+        var card = findCard(s.cardIds[s.index]);
+        if (!card) { screen = "home"; return renderHome(); }
+        var next = findCard(s.cardIds[s.index + 1]);
+        var label = t(s.mode === "learn" ? "learn" : "review");
+        return '<div class="screen study-page"><div class="study-deck-next" aria-hidden="true">' +
+          (next ? '<img src="' + escapeHtml(next.portrait || next.image) + '" alt="">' :
+            '<div class="next-finish">' + t("sessionComplete") + '</div>') + '</div>' +
+          '<div class="study-scroll"><article class="swipe-surface" id="swipeSurface">' +
+          photoMarkup(card, "study-photo") +
+          '<div class="study-category"><span>' + escapeHtml(categoryLabel(card.category)) + '</span><span>' + t("illustrativePhoto") + '</span></div>' +
+          (s.revealed ? answerMarkup(card) : '<div class="study-reveal"><div class="question">' + t("question") +
+            '</div><button class="meaning-btn" data-action="reveal">' + t("showMeaning") + '</button></div>') +
+          '<div class="swipe-stamp left" id="stampLeft">↶ ' + t("stampPractice") + '</div><div class="swipe-stamp right" id="stampRight">' + t("stampGotIt") + ' ↷</div>' +
+          '</article></div><header class="study-header">' +
+          '<button class="icon-btn" data-action="pause" aria-label="' + escapeHtml(t("saveClose")) + '">' + icon("close") + '</button>' +
+          '<span>' + label + ' · ' + t("of", { a: s.index + 1, b: s.cardIds.length }) + '</span>' +
+          '<button class="undo-btn" data-action="undo" ' + (!s.undo ? "disabled" : "") + '>' + t("undo") + '</button></header>' +
+          '<div class="progress-track" aria-hidden="true"><span style="width:' + ((s.index + 1) / s.cardIds.length * 100) + '%"></span></div>' +
+          '<footer class="study-actions"><button class="choice-btn left" data-action="choose-left">' + icon("bookmark") + '← ' + t("practiceAgain") + '</button>' +
+          '<button class="choice-btn right" data-action="choose-right">' + icon("check") + t("gotIt") + ' →</button></footer></div>';
+      }
+      function renderSummary() {
+        var s = state.activeSession;
+        if (!s) { screen = "home"; return renderHome(); }
+        var isReview = s.mode === "review";
+        var reviewCount = reviewCards().length;
+        return '<div class="screen"><div class="screen-scroll pad"><div class="summary-badge">✓</div><h1 class="summary-title">' + t("sessionComplete") + '</h1>' +
+          '<p class="summary-sub">' + t("signsSeen", { n: s.cardIds.length }) + '</p><div class="stats"><div class="stat"><strong>' + s.counts.right +
+          '</strong><small>' + t("gotIt") + '</small></div><div class="stat"><strong>' + s.counts.left + '</strong><small>' + t("practiceAgain") + '</small></div></div>' +
+          (isReview ? '<p class="summary-sub" style="margin-top:25px;">' + t("stillPractice", { n: reviewCount }) + '</p>' : '') +
+          '<div class="summary-actions">' +
+          (isReview ? (reviewCount ? '<button class="primary-btn" data-action="summary-review">' + t("reviewAgain") + ' ' + icon("arrow") + '</button>' : '') +
+            '<button class="secondary-btn" data-action="summary-home">' + t("backReview") + '</button>' :
+            (reviewCount ? '<button class="primary-btn" data-action="summary-review">' + t("reviewSigns") + ' ' + icon("arrow") + '</button>' : '') +
+            '<button class="' + (reviewCount ? "secondary-btn" : "primary-btn") + '" data-action="summary-more">' + t("learnMore") + '</button>' +
+            '<button class="text-btn" data-action="summary-home">' + t("backLearn") + '</button>') +
+          '</div><div style="text-align:center;"><button class="text-btn" data-action="undo">' + t("undoLast") + '</button></div></div></div>';
+      }
+      function renderReview() {
+        var list = reviewCards();
+        var rows = list.map(function (c) {
+          return '<button class="review-row" data-action="detail" data-id="' + c.id + '"><img src="' + c.image +
+            '" alt=""><span style="flex:1;min-width:0;"><small>' + escapeHtml(categoryLabel(c.category)) +
+            '</small><strong lang="ko">' + escapeHtml(c.korean) + '</strong><small>' + t("tapDetails") + '</small></span>' +
+            '<span class="inline-icon" aria-hidden="true">' + icon("arrow") + '</span></button>';
+        }).join("");
+        return '<div class="screen"><header class="screen-header"><strong class="header-title">' + t("review") + '</strong>' + settingsButton() + '</header>' +
+          '<div class="screen-scroll">' + resumeBanner() + '<div class="review-intro"><h1>' + t("reviewHero") + '</h1><p>' + t("reviewDesc") + '</p></div>' +
+          (list.length ? '<div class="review-count"><span>' + t("signsCount", { n: list.length }) + '</span><span>' + t("newestFirst") + '</span></div>' +
+            '<div class="pad" style="margin-bottom:20px;"><button class="primary-btn" data-action="start-review">' + t("startReviewing") + ' ' + icon("arrow") + '</button></div>' +
+            '<div class="review-list">' + rows + '</div>' :
+            '<div class="review-empty"><div class="empty-symbol">✓</div><h2>' + t("nothingReview") + '</h2><p>' + t("swipeLeftAppears") + '</p>' +
+            '<button class="secondary-btn" data-action="nav-home" style="margin-top:15px;">' + t("startLearning") + '</button></div>') +
+          '</div>' + mainNav("review") + '</div>';
+      }
+      function renderDetail() {
+        var card = findCard(detailId);
+        if (!card) { screen = "review"; return renderReview(); }
+        return '<div class="screen"><header class="screen-header"><button class="icon-btn" data-action="detail-back" aria-label="' + escapeHtml(t("backReview")) + '">' +
+          icon("back") + '</button><strong class="header-title">' + t("signDetails") + '</strong><span style="width:42px;"></span></header>' +
+          '<div class="screen-scroll"><div class="detail-body"><div class="small-caps">' + escapeHtml(categoryLabel(card.category)) + '</div>' +
+          photoMarkup(card, "") +
+          (detailRevealed ? answerMarkup(card) : '<div class="question">' + t("question") + '</div><button class="meaning-btn" data-action="detail-reveal">' + t("showMeaning") + '</button>') +
+          '</div></div><footer class="detail-footer"><button class="secondary-btn" data-action="detail-back">' + t("backReview") + '</button></footer></div>';
+      }
+      function renderSettings() {
+        return '<div class="screen"><header class="screen-header"><button class="icon-btn" data-action="settings-back" aria-label="' + escapeHtml(t("back")) + '">' +
+          icon("back") + '</button><strong class="header-title">' + t("settings") + '</strong><span style="width:42px;"></span></header>' +
+          '<div class="screen-scroll"><div class="settings-list">' +
+          '<button class="settings-row" data-action="how"><span>' + t("howItWorks") + '</span>' + icon("arrow") + '</button>' +
+          '<button class="settings-row" data-action="reset"><span>' + t("resetProgress") + '</span>' + icon("arrow") + '</button>' +
+          '<button class="settings-row" data-action="about"><span>' + t("about") + '</span>' + icon("arrow") + '</button></div>' +
+          '<p class="settings-hint">' + t("settingsHint") + '</p>' +
+          '</div></div>';
+      }
+      function renderModal() {
+        if (!modal) return "";
+        return '<div class="modal-layer" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-label="' + escapeHtml(modal.title) +
+          '"><h2>' + escapeHtml(modal.title) + '</h2><p>' + escapeHtml(modal.body) + '</p><div class="dialog-actions">' +
+          '<button class="cancel" data-action="modal-cancel">' + escapeHtml(modal.cancel || t("cancel")) + '</button>' +
+          '<button class="confirm ' + (modal.danger ? "danger" : "") + '" data-action="modal-confirm">' + escapeHtml(modal.confirm || t("continue")) +
+          '</button></div></div></div>';
+      }
+      function renderZoom() {
+        if (!zoomCard) return "";
+        return '<div class="zoom-layer" role="dialog" aria-modal="true" aria-label="' + escapeHtml(t("enlargedPhoto")) + '">' +
+          '<div class="zoom-top"><span>' + t("signPhotoIllustrative") + '</span><button data-action="zoom-close" aria-label="' + escapeHtml(t("closePhoto")) + '">×</button></div>' +
+          '<div class="zoom-viewport" id="zoomViewport"><img id="zoomImage" src="' + escapeHtml(zoomCard.image) + '" alt="' + escapeHtml(t("enlargedPhoto")) + '" draggable="false"></div>' +
+          '<div class="zoom-controls"><button data-action="zoom-out" aria-label="' + escapeHtml(t("zoomOut")) + '">−</button><span>' + t("pinchHint") + '</span>' +
+          '<button data-action="zoom-in" aria-label="' + escapeHtml(t("zoomIn")) + '">+</button></div></div>';
+      }
+      function render() {
+        var body = screen === "language-setup" ? renderLanguageSetup() :
+          screen === "onboarding" ? renderOnboarding() :
+          screen === "home" ? renderHome() :
+          screen === "study" ? renderStudy() :
+          screen === "summary" ? renderSummary() :
+          screen === "review" ? renderReview() :
+          screen === "detail" ? renderDetail() : renderSettings();
+        app.className = screen === "study" ? "is-immersive" : "";
+        app.innerHTML = (screen === "language-setup" ? "" : renderLanguageBar()) +
+          '<div class="app-content">' + body + '</div>' + renderModal() + renderLanguageMenu() + renderZoom();
+        ["desktopEyebrow", "desktopTitle", "desktopBody", "desktopTry", "desktopSwipe", "desktopSpace", "desktopSample"].forEach(function (id) {
+          var element = document.getElementById(id);
+          if (element) element.innerHTML = t(id);
+        });
+        attachSwipe();
+        attachZoom();
+        if (document.documentElement) document.documentElement.lang = state.language;
+        document.title = "Sign by Sign — " + (screen === "study" ? t("learn") : screen === "review" ? t("review") : screen === "settings" ? t("settings") : t("language"));
+      }
+      function choose(choice) {
+        if (choiceLocked) return;
+        if (!state.activeSession || state.activeSession.phase !== "in_progress") return;
+        var surface = document.getElementById("swipeSurface");
+        var reducedMotion = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (surface && !reducedMotion) {
+          applyChoice(choice, true);
+          choiceLocked = true;
+          surface.classList.remove("dragging");
+          surface.style.transition = "transform .21s ease-in, opacity .21s ease-in";
+          surface.style.transform = "translateX(" + (choice === "left" ? "-440px" : "440px") + ") rotate(" + (choice === "left" ? "-14deg" : "14deg") + ")";
+          surface.style.opacity = "0";
+          window.setTimeout(function () { choiceLocked = false; render(); }, 210);
+          return;
+        }
+        applyChoice(choice, false);
+      }
+      function applyChoice(choice, deferRender) {
+        var s = state.activeSession;
+        if (!s || s.phase !== "in_progress") return;
+        var card = findCard(s.cardIds[s.index]);
+        if (!card) return;
+        var prior = state.progress[card.id] ? JSON.parse(JSON.stringify(state.progress[card.id])) : null;
+        s.undo = { id: card.id, prior: prior, index: s.index, revealed: !!s.revealed, counts: { left: s.counts.left, right: s.counts.right } };
+        var oldPractice = prior && prior.practiceChoiceCount || 0;
+        state.progress[card.id] = { status: choice === "left" ? "practice" : "got_it", lastChoiceAt: Date.now(), practiceChoiceCount: oldPractice + (choice === "left" ? 1 : 0) };
+        s.counts[choice]++;
+        s.index++;
+        s.revealed = false;
+        if (s.index >= s.cardIds.length) { s.phase = "results_pending"; screen = "summary"; }
+        save();
+        if (!deferRender) render();
+      }
+      function undo() {
+        var s = state.activeSession;
+        if (!s || !s.undo) return;
+        var u = s.undo;
+        if (u.prior === null) delete state.progress[u.id]; else state.progress[u.id] = u.prior;
+        s.index = u.index;
+        s.revealed = u.revealed;
+        s.counts = u.counts;
+        s.phase = "in_progress";
+        s.undo = null;
+        screen = "study";
+        save();
+        render();
+      }
+      function startLearn(category) {
+        var pool = cards.filter(function (c) { return (category === "all" || c.category === category) && !state.progress[c.id]; });
+        pool.sort(function (a, b) { return a.difficulty - b.difficulty || (a.id < b.id ? -1 : 1); });
+        var chosen = pool.slice(0, 10);
+        if (!chosen.length) { screen = "home"; render(); return; }
+        state.activeSession = { sessionId: "learn-" + Date.now(), mode: "learn", category: category, phase: "in_progress", cardIds: chosen.map(function (c) { return c.id; }), index: 0, revealed: false, counts: { left: 0, right: 0 }, undo: null };
+        save(); screen = "study"; render();
+      }
+      function startReview() {
+        var chosen = reviewCards().slice(0, 10);
+        if (!chosen.length) { screen = "review"; render(); return; }
+        state.activeSession = { sessionId: "review-" + Date.now(), mode: "review", category: "all", phase: "in_progress", cardIds: chosen.map(function (c) { return c.id; }), index: 0, revealed: false, counts: { left: 0, right: 0 }, undo: null };
+        save(); screen = "study"; render();
+      }
+      function askStart(mode) {
+        var run = function () { if (mode === "learn") startLearn(state.selectedCategory); else startReview(); };
+        if (!state.activeSession) { run(); return; }
+        modal = { title: t("newSessionTitle"), body: t("newSessionBody"), confirm: t("startNew"), onConfirm: function () { state.activeSession = null; save(); run(); } };
+        render();
+      }
+      function completeOnboarding() {
+        state.onboarded = true; save();
+        screen = onboardReturn; onboardStep = 0; render();
+      }
+      function leaveSummary(destination) {
+        var selected = state.selectedCategory;
+        state.activeSession = null; save();
+        if (destination === "review-session") startReview();
+        else if (destination === "learn-session") startLearn(selected);
+        else { screen = destination; render(); }
+      }
+      function openZoom(id) {
+        if (Date.now() < suppressZoomUntil) return;
+        zoomCard = findCard(id); if (!zoomCard) return;
+        zoomScale = 1; zoomX = 0; zoomY = 0; render();
+      }
+      function closeZoom() { zoomCard = null; render(); }
+      function updateZoom() {
+        var img = document.getElementById("zoomImage");
+        if (img) img.style.transform = "translate(" + zoomX + "px," + zoomY + "px) scale(" + zoomScale + ")";
+      }
+      function attachSwipe() {
+        var surface = document.getElementById("swipeSurface");
+        if (!surface) return;
+        var drag = null;
+        surface.addEventListener("pointerdown", function (e) {
+          if (e.target.closest("button") && !e.target.closest(".photo-btn")) return;
+          drag = { x: e.clientX, y: e.clientY, t: performance.now(), active: false };
+        });
+        surface.addEventListener("pointermove", function (e) {
+          if (!drag) return;
+          var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+          if (!drag.active && Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy) * 1.25) {
+            drag.active = true; surface.classList.add("dragging");
+            try { surface.setPointerCapture(e.pointerId); } catch (_) {}
+          }
+          if (!drag.active) return;
+          surface.style.transform = "translateX(" + dx + "px) rotate(" + (dx / 26) + "deg)";
+          var strength = Math.min(1, Math.abs(dx) / 80);
+          document.getElementById("stampLeft").style.opacity = dx < 0 ? strength : 0;
+          document.getElementById("stampRight").style.opacity = dx > 0 ? strength : 0;
+        });
+        function finish(e) {
+          if (!drag) return;
+          var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+          var elapsed = Math.max(1, performance.now() - drag.t);
+          var speed = Math.abs(dx) / elapsed * 1000;
+          var shouldChoose = drag.active && Math.abs(dx) >= Math.abs(dy) * 1.25 &&
+            (Math.abs(dx) >= surface.clientWidth * .25 || (Math.abs(dx) >= 48 && speed >= 700));
+          if (drag.active) suppressZoomUntil = Date.now() + 400;
+          drag = null;
+          if (shouldChoose) choose(dx < 0 ? "left" : "right");
+          else {
+            surface.classList.remove("dragging");
+            surface.style.transform = "";
+            document.getElementById("stampLeft").style.opacity = 0;
+            document.getElementById("stampRight").style.opacity = 0;
+          }
+        }
+        surface.addEventListener("pointerup", finish);
+        surface.addEventListener("pointercancel", function () {
+          drag = null; surface.classList.remove("dragging"); surface.style.transform = "";
+        });
+      }
+      function attachZoom() {
+        var viewport = document.getElementById("zoomViewport");
+        if (!viewport) return;
+        var points = new Map(), lastMid = null, lastDistance = null;
+        viewport.addEventListener("pointerdown", function (e) {
+          points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          viewport.setPointerCapture(e.pointerId);
+        });
+        viewport.addEventListener("pointermove", function (e) {
+          if (!points.has(e.pointerId)) return;
+          var prior = points.get(e.pointerId);
+          points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          var arr = Array.from(points.values());
+          if (arr.length === 1 && zoomScale > 1) { zoomX += e.clientX - prior.x; zoomY += e.clientY - prior.y; }
+          if (arr.length >= 2) {
+            var dx = arr[0].x - arr[1].x, dy = arr[0].y - arr[1].y;
+            var dist = Math.hypot(dx, dy);
+            var mid = { x: (arr[0].x + arr[1].x) / 2, y: (arr[0].y + arr[1].y) / 2 };
+            if (lastDistance) zoomScale = Math.max(1, Math.min(4, zoomScale * dist / lastDistance));
+            if (lastMid) { zoomX += mid.x - lastMid.x; zoomY += mid.y - lastMid.y; }
+            lastDistance = dist; lastMid = mid;
+          }
+          if (zoomScale === 1) { zoomX = 0; zoomY = 0; }
+          updateZoom();
+        });
+        function release(e) { points.delete(e.pointerId); lastDistance = null; lastMid = null; }
+        viewport.addEventListener("pointerup", release);
+        viewport.addEventListener("pointercancel", release);
+        viewport.addEventListener("wheel", function (e) {
+          e.preventDefault();
+          zoomScale = Math.max(1, Math.min(4, zoomScale + (e.deltaY < 0 ? .2 : -.2)));
+          if (zoomScale === 1) { zoomX = 0; zoomY = 0; }
+          updateZoom();
+        }, { passive: false });
+        updateZoom();
+      }
+      app.addEventListener("click", function (e) {
+        if (choiceLocked) return;
+        var target = e.target.closest("[data-action]");
+        if (!target) return;
+        var action = target.dataset.action;
+        if (action === "zoom" && Date.now() < suppressZoomUntil) return;
+        if (action === "setup-language") { state.language = target.dataset.lang; save(); render(); }
+        else if (action === "confirm-language") { state.languageChosen = true; save(); screen = state.onboarded ? "home" : "onboarding"; render(); }
+        else if (action === "language-menu") { languageMenuOpen = true; render(); }
+        else if (action === "language-close") { languageMenuOpen = false; render(); }
+        else if (action === "switch-language") { state.language = target.dataset.lang; languageMenuOpen = false; save(); render(); }
+        else if (action === "nav-home") { screen = "home"; render(); }
+        else if (action === "nav-review") { screen = "review"; render(); }
+        else if (action === "settings") { settingsReturn = screen; screen = "settings"; render(); }
+        else if (action === "settings-back") { screen = settingsReturn; render(); }
+        else if (action === "category") { state.selectedCategory = target.dataset.category; save(); render(); }
+        else if (action === "category-all") { state.selectedCategory = "all"; save(); render(); }
+        else if (action === "start-learn") askStart("learn");
+        else if (action === "start-review") askStart("review");
+        else if (action === "resume") { screen = state.activeSession && state.activeSession.phase === "results_pending" ? "summary" : "study"; render(); }
+        else if (action === "pause") { screen = state.activeSession && state.activeSession.mode === "review" ? "review" : "home"; render(); }
+        else if (action === "reveal") { if (state.activeSession) { state.activeSession.revealed = true; save(); render(); } }
+        else if (action === "choose-left") choose("left");
+        else if (action === "choose-right") choose("right");
+        else if (action === "undo") undo();
+        else if (action === "detail") { detailId = target.dataset.id; detailRevealed = false; screen = "detail"; render(); }
+        else if (action === "detail-back") { screen = "review"; render(); }
+        else if (action === "detail-reveal") { detailRevealed = true; render(); }
+        else if (action === "zoom") openZoom(target.dataset.id);
+        else if (action === "zoom-close") closeZoom();
+        else if (action === "zoom-in" || action === "zoom-out") {
+          zoomScale = Math.max(1, Math.min(4, zoomScale + (action === "zoom-in" ? .35 : -.35)));
+          if (zoomScale === 1) { zoomX = 0; zoomY = 0; }
+          updateZoom();
+        }
+        else if (action === "onboard-next") { onboardStep = 1; render(); }
+        else if (action === "onboard-skip" || action === "onboard-done") completeOnboarding();
+        else if (action === "how") { onboardReturn = "settings"; onboardStep = 0; screen = "onboarding"; render(); }
+        else if (action === "reset") {
+          modal = { title: t("resetTitle"), body: t("resetBody"), confirm: t("resetProgress"), danger: true,
+            onConfirm: function () {
+              var onboarded = state.onboarded, language = state.language, languageChosen = state.languageChosen;
+              state = freshState(); state.onboarded = onboarded; state.language = language; state.languageChosen = languageChosen;
+              save(); screen = "home"; render();
+            } };
+          render();
+        }
+        else if (action === "about") {
+          modal = { title: t("aboutTitle"), body: t("aboutBody"), cancel: t("close"), confirm: t("gotIt"), onConfirm: function () {} };
+          render();
+        }
+        else if (action === "modal-cancel") { modal = null; render(); }
+        else if (action === "modal-confirm") { var run = modal && modal.onConfirm; modal = null; if (run) run(); else render(); }
+        else if (action === "summary-review") leaveSummary("review-session");
+        else if (action === "summary-more") leaveSummary("learn-session");
+        else if (action === "summary-home") leaveSummary(state.activeSession && state.activeSession.mode === "review" ? "review" : "home");
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          if (zoomCard) closeZoom();
+          else if (languageMenuOpen) { languageMenuOpen = false; render(); }
+          else if (modal) { modal = null; render(); }
+          else if (screen === "study") { screen = state.activeSession && state.activeSession.mode === "review" ? "review" : "home"; render(); }
+          else if (screen === "summary") leaveSummary(state.activeSession && state.activeSession.mode === "review" ? "review" : "home");
+          else if (screen === "detail") { screen = "review"; render(); }
+          else if (screen === "settings") { screen = settingsReturn; render(); }
+          return;
+        }
+        if (modal || languageMenuOpen || zoomCard || screen !== "study") return;
+        if (e.key === "ArrowLeft") { e.preventDefault(); choose("left"); }
+        else if (e.key === "ArrowRight") { e.preventDefault(); choose("right"); }
+        else if (e.code === "Space" && !state.activeSession.revealed) { e.preventDefault(); state.activeSession.revealed = true; save(); render(); }
+      });
+      document.addEventListener("error", function (e) {
+        if (e.target && e.target.tagName === "IMG") {
+          var wrap = e.target.closest(".photo-btn");
+          if (wrap) { wrap.classList.add("broken"); wrap.disabled = true; }
+        }
+      }, true);
+      render();
+    })();
+  </script>
+</body>
+</html>
