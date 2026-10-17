@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8f3">
+  <meta name="description" content="한국어 간판을 사진으로 익히고, 직접 촬영해 업종과 브랜드의 뜻을 확인하세요.">
+  <title>Sign by Sign — 간판으로 도시 읽기</title>
+  <link rel="stylesheet" href="/ax.css">
+  <script src="/vendor/tesseract/tesseract.min.js" defer></script>
+  <script src="/ax.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#pageContent">본문으로 이동 · Skip to content</a>
+  <main id="app" aria-label="Sign by Sign">
+    <div class="startup-error" role="status"><span class="brand-mark">ㅅ</span><h1>간판을 준비하고 있어요.</h1><p>Loading signs…</p></div>
+  </main>
+  <input id="captureInput" type="file" accept="image/*" capture="environment" hidden>
+  <input id="uploadInput" type="file" accept="image/*" hidden>
+  <noscript>간판 학습과 카메라 기능을 이용하려면 JavaScript를 켜주세요. JavaScript is required.</noscript>
+</body>
+</html>

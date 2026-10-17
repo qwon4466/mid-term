@@ -1,0 +1,8 @@
+node_modules/
+data/*.sqlite-wal
+data/*.sqlite-shm
+ocr-data/
+*.log
+.env
+.env.*
+!.env.example

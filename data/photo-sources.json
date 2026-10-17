@@ -1,0 +1,54 @@
+[
+  {
+    "id": "starbucks",
+    "path": "assets/ax/photos/starbucks.jpg",
+    "title": "File:Starbucks in Insadong, Seoul.jpg",
+    "kind": "photo",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Starbucks_in_Insadong,_Seoul.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Starbucks_in_Insadong%2C_Seoul.jpg/1920px-Starbucks_in_Insadong%2C_Seoul.jpg",
+    "author": "Christian Bolz",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "changes": "Unedited Wikimedia thumbnail; displayed with CSS object-fit.",
+    "retrievedAt": "2026-10-09"
+  },
+  {
+    "id": "hospital",
+    "path": "assets/ax/photos/hospital.jpg",
+    "title": "File:W병원 전경.jpg",
+    "kind": "photo",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:W%EB%B3%91%EC%9B%90_%EC%A0%84%EA%B2%BD.jpg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c9/W%EB%B3%91%EC%9B%90_%EC%A0%84%EA%B2%BD.jpg",
+    "author": "W-hospital",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "changes": "Unedited Wikimedia thumbnail; displayed with CSS object-fit.",
+    "retrievedAt": "2026-10-09"
+  },
+  {
+    "id": "bus",
+    "path": "assets/ax/photos/bus.jpg",
+    "title": "File:서울버스정류장.jpg",
+    "kind": "photo",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%84%9C%EC%9A%B8%EB%B2%84%EC%8A%A4%EC%A0%95%EB%A5%98%EC%9E%A5.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/%EC%84%9C%EC%9A%B8%EB%B2%84%EC%8A%A4%EC%A0%95%EB%A5%98%EC%9E%A5.jpg/1920px-%EC%84%9C%EC%9A%B8%EB%B2%84%EC%8A%A4%EC%A0%95%EB%A5%98%EC%9E%A5.jpg",
+    "author": "Kth696586",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "changes": "Unedited Wikimedia thumbnail; displayed with CSS object-fit.",
+    "retrievedAt": "2026-10-09"
+  },
+  {
+    "id": "taxi",
+    "path": "assets/ax/photos/taxi.jpg",
+    "title": "File:센트럴 앞 택시정류장.jpg",
+    "kind": "photo",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%84%BC%ED%8A%B8%EB%9F%B4_%EC%95%9E_%ED%83%9D%EC%8B%9C%EC%A0%95%EB%A5%98%EC%9E%A5.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/%EC%84%BC%ED%8A%B8%EB%9F%B4_%EC%95%9E_%ED%83%9D%EC%8B%9C%EC%A0%95%EB%A5%98%EC%9E%A5.jpg/1920px-%EC%84%BC%ED%8A%B8%EB%9F%B4_%EC%95%9E_%ED%83%9D%EC%8B%9C%EC%A0%95%EB%A5%98%EC%9E%A5.jpg",
+    "author": "ko:User:Pectus Solentis (前 ko:User:바리반디)",
+    "license": "CC BY-SA 2.0 kr",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en",
+    "changes": "Unedited Wikimedia thumbnail; displayed with CSS object-fit.",
+    "retrievedAt": "2026-10-09"
+  }
+]

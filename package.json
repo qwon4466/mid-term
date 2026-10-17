@@ -1,0 +1,15 @@
+{
+  "name": "sign-by-sign-ax",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.mjs",
+    "db:seed": "node database.mjs --seed",
+    "assets:photos": "node scripts/import-photos.mjs",
+    "assets:ocr": "node scripts/download-ocr.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": { "tesseract.js": "6.0.1" }
+}

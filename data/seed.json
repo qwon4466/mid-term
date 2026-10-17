@@ -1,0 +1,753 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "medical",
+      "label": {
+        "ko": "의료",
+        "en": "Medical",
+        "ja": "医療"
+      },
+      "description": {
+        "ko": "약국 · 병원",
+        "en": "Pharmacies · hospitals",
+        "ja": "薬局・病院"
+      },
+      "cover": "pharmacy",
+      "icon": "medical"
+    },
+    {
+      "id": "cafe",
+      "label": {
+        "ko": "카페",
+        "en": "Cafés",
+        "ja": "カフェ"
+      },
+      "description": {
+        "ko": "메가커피 · 스타벅스 · 커피숍",
+        "en": "Mega Coffee · Starbucks · cafés",
+        "ja": "メガコーヒー・スターバックス・喫茶店"
+      },
+      "cover": "starbucks",
+      "icon": "coffee"
+    },
+    {
+      "id": "transport",
+      "label": {
+        "ko": "교통",
+        "en": "Transport",
+        "ja": "交通"
+      },
+      "description": {
+        "ko": "지하철 · 버스 · 택시",
+        "en": "Subway · bus · taxi",
+        "ja": "地下鉄・バス・タクシー"
+      },
+      "cover": "subway",
+      "icon": "train"
+    },
+    {
+      "id": "restaurant",
+      "label": {
+        "ko": "음식점",
+        "en": "Restaurants",
+        "ja": "飲食店"
+      },
+      "description": {
+        "ko": "한식 · 중식 · 일식 · 프랜차이즈",
+        "en": "Korean · Chinese · Japanese · chains",
+        "ja": "韓国料理・中華・和食・チェーン"
+      },
+      "cover": "korean",
+      "icon": "food"
+    }
+  ],
+  "subcategories": [
+    {
+      "id": "pharmacy",
+      "category": "medical",
+      "label": {
+        "ko": "약국",
+        "en": "Pharmacy",
+        "ja": "薬局"
+      }
+    },
+    {
+      "id": "hospital",
+      "category": "medical",
+      "label": {
+        "ko": "병원",
+        "en": "Hospital",
+        "ja": "病院"
+      }
+    },
+    {
+      "id": "mega",
+      "category": "cafe",
+      "label": {
+        "ko": "메가커피",
+        "en": "Mega Coffee",
+        "ja": "メガコーヒー"
+      }
+    },
+    {
+      "id": "starbucks",
+      "category": "cafe",
+      "label": {
+        "ko": "스타벅스",
+        "en": "Starbucks",
+        "ja": "スターバックス"
+      }
+    },
+    {
+      "id": "coffee_shop",
+      "category": "cafe",
+      "label": {
+        "ko": "커피숍",
+        "en": "Coffee shop",
+        "ja": "喫茶店"
+      }
+    },
+    {
+      "id": "subway",
+      "category": "transport",
+      "label": {
+        "ko": "지하철 입·출구",
+        "en": "Subway entrance / exit",
+        "ja": "地下鉄の出入口"
+      }
+    },
+    {
+      "id": "bus",
+      "category": "transport",
+      "label": {
+        "ko": "버스정류장",
+        "en": "Bus stop",
+        "ja": "バス停"
+      }
+    },
+    {
+      "id": "taxi",
+      "category": "transport",
+      "label": {
+        "ko": "택시 승강장",
+        "en": "Taxi stand",
+        "ja": "タクシー乗り場"
+      }
+    },
+    {
+      "id": "korean",
+      "category": "restaurant",
+      "label": {
+        "ko": "한식집",
+        "en": "Korean restaurant",
+        "ja": "韓国料理店"
+      }
+    },
+    {
+      "id": "chinese",
+      "category": "restaurant",
+      "label": {
+        "ko": "중식집",
+        "en": "Chinese restaurant",
+        "ja": "中華料理店"
+      }
+    },
+    {
+      "id": "japanese",
+      "category": "restaurant",
+      "label": {
+        "ko": "일식집",
+        "en": "Japanese restaurant",
+        "ja": "和食店"
+      }
+    },
+    {
+      "id": "franchise",
+      "category": "restaurant",
+      "label": {
+        "ko": "프랜차이즈 식당",
+        "en": "Chain restaurant",
+        "ja": "チェーン店"
+      }
+    }
+  ],
+  "brands": [
+    {
+      "id": "mega",
+      "name": "메가MGC커피",
+      "homepage": "https://www.mega-mgccoffee.com/"
+    },
+    {
+      "id": "starbucks",
+      "name": "스타벅스",
+      "homepage": "https://www.starbucks.co.kr/"
+    },
+    {
+      "id": "lotteria",
+      "name": "롯데리아",
+      "homepage": "https://www.lotteeatz.com/"
+    }
+  ],
+  "signs": [
+    {
+      "id": "pharmacy",
+      "subcategory": "pharmacy",
+      "korean": "약국",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "약국",
+        "PHARMACY"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "약을 파는 곳",
+          "explanation": "약을 사거나 약사에게 의약품에 대해 물어볼 수 있는 곳이에요.",
+          "keywords": [
+            [
+              "약국",
+              "약을 파는 곳"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Pharmacy",
+          "explanation": "A place to buy medicines and ask a pharmacist about them.",
+          "keywords": [
+            [
+              "약국",
+              "Pharmacy"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "薬局",
+          "explanation": "薬を購入したり、薬剤師に薬について相談できる場所です。",
+          "keywords": [
+            [
+              "약국",
+              "薬局"
+            ]
+          ]
+        }
+      },
+      "image": "assets/pharmacy.png",
+      "portrait": "assets/pharmacy-portrait.png"
+    },
+    {
+      "id": "hospital",
+      "subcategory": "hospital",
+      "korean": "병원",
+      "difficulty": 2,
+      "brand": null,
+      "aliases": [
+        "병원",
+        "의원",
+        "HOSPITAL",
+        "CLINIC",
+        "W병원"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "진료를 받는 곳",
+          "explanation": "의사의 진료를 받는 의료기관이에요. 간판만으로 진료과목이나 운영시간을 확인할 수는 없어요.",
+          "keywords": [
+            [
+              "병원",
+              "진료를 받는 곳"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Hospital / clinic",
+          "explanation": "A medical facility where you can see a doctor. The sign alone does not confirm specialties or opening hours.",
+          "keywords": [
+            [
+              "병원",
+              "Hospital / clinic"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "病院・診療所",
+          "explanation": "医師の診療を受ける医療機関です。看板だけでは診療科や診療時間は確認できません。",
+          "keywords": [
+            [
+              "병원",
+              "病院・診療所"
+            ]
+          ]
+        }
+      },
+      "photo": "hospital"
+    },
+    {
+      "id": "mega",
+      "subcategory": "mega",
+      "korean": "메가커피",
+      "difficulty": 2,
+      "brand": "mega",
+      "aliases": [
+        "메가커피",
+        "메가MGC커피",
+        "MEGA MGC COFFEE",
+        "MEGA COFFEE"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "메가MGC커피 카페",
+          "explanation": "메가MGC커피 브랜드의 카페예요. 커피와 다른 음료를 주문할 수 있어요.",
+          "keywords": [
+            [
+              "메가커피",
+              "메가MGC커피 카페"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Mega MGC Coffee",
+          "explanation": "This sign identifies the Mega MGC Coffee brand. You can order coffee and other drinks.",
+          "keywords": [
+            [
+              "메가커피",
+              "Mega MGC Coffee"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "メガMGCコーヒー",
+          "explanation": "メガMGCコーヒーのカフェを示す看板です。コーヒーや飲み物を注文できます。",
+          "keywords": [
+            [
+              "메가커피",
+              "メガMGCコーヒー"
+            ]
+          ]
+        }
+      },
+      "generated": "mega"
+    },
+    {
+      "id": "starbucks",
+      "subcategory": "starbucks",
+      "korean": "스타벅스 커피",
+      "difficulty": 2,
+      "brand": "starbucks",
+      "aliases": [
+        "스타벅스",
+        "스타벅스커피",
+        "STARBUCKS",
+        "STARBUCKS COFFEE"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "스타벅스 카페",
+          "explanation": "스타벅스 브랜드의 카페예요. 한국어 간판에는 ‘스타벅스 커피’라고 적히기도 해요.",
+          "keywords": [
+            [
+              "스타벅스 커피",
+              "스타벅스 카페"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Starbucks coffee shop",
+          "explanation": "This sign identifies Starbucks. Some Korean storefronts spell out the brand in Hangul.",
+          "keywords": [
+            [
+              "스타벅스 커피",
+              "Starbucks coffee shop"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "スターバックス",
+          "explanation": "スターバックスの看板です。韓国ではハングルで「스타벅스 커피」と書かれることもあります。",
+          "keywords": [
+            [
+              "스타벅스 커피",
+              "スターバックス"
+            ]
+          ]
+        }
+      },
+      "photo": "starbucks"
+    },
+    {
+      "id": "cafe",
+      "subcategory": "coffee_shop",
+      "korean": "카페",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "카페",
+        "커피숍",
+        "CAFE",
+        "CAFÉ",
+        "COFFEE SHOP"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "커피·음료를 파는 곳",
+          "explanation": "커피나 다른 음료를 주문하고 잠시 쉴 수 있는 곳이에요.",
+          "keywords": [
+            [
+              "카페",
+              "커피·음료를 파는 곳"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Café / coffee shop",
+          "explanation": "A place to order coffee and other drinks, often with somewhere to sit.",
+          "keywords": [
+            [
+              "카페",
+              "Café / coffee shop"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "カフェ・喫茶店",
+          "explanation": "コーヒーや飲み物を注文して休める場所です。",
+          "keywords": [
+            [
+              "카페",
+              "カフェ・喫茶店"
+            ]
+          ]
+        }
+      },
+      "image": "assets/cafe.png",
+      "portrait": "assets/cafe-portrait.png"
+    },
+    {
+      "id": "subway",
+      "subcategory": "subway",
+      "korean": "지하철",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "지하철",
+        "지하철역",
+        "SUBWAY",
+        "지하철입구",
+        "지하철출구"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "지하철역 입·출구 안내",
+          "explanation": "지하철역을 찾을 때 따라가는 표시예요. 출구 번호는 목적지에 맞게 따로 확인하세요.",
+          "keywords": [
+            [
+              "지하철",
+              "지하철역 입·출구 안내"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Subway entrance / exit",
+          "explanation": "A sign leading to a subway station. Check the exit number separately for your destination.",
+          "keywords": [
+            [
+              "지하철",
+              "Subway entrance / exit"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "地下鉄の出入口",
+          "explanation": "地下鉄駅を探すときの案内です。目的地に合う出口番号は別途確認してください。",
+          "keywords": [
+            [
+              "지하철",
+              "地下鉄の出入口"
+            ]
+          ]
+        }
+      },
+      "image": "assets/subway.png",
+      "portrait": "assets/subway-portrait.png"
+    },
+    {
+      "id": "bus",
+      "subcategory": "bus",
+      "korean": "버스정류장",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "버스정류장",
+        "버스승강장",
+        "BUS STOP"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "버스를 기다리는 곳",
+          "explanation": "버스를 타기 위해 기다리는 곳이에요. 노선 번호와 진행 방향을 함께 확인하세요.",
+          "keywords": [
+            [
+              "버스정류장",
+              "버스를 기다리는 곳"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Bus stop",
+          "explanation": "Wait here to catch a bus. Check the route number and direction.",
+          "keywords": [
+            [
+              "버스정류장",
+              "Bus stop"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "バス停",
+          "explanation": "バスを待つ場所です。路線番号と進行方向も確認してください。",
+          "keywords": [
+            [
+              "버스정류장",
+              "バス停"
+            ]
+          ]
+        }
+      },
+      "generated": "bus-sign",
+      "context": "bus"
+    },
+    {
+      "id": "taxi",
+      "subcategory": "taxi",
+      "korean": "택시 승강장",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "택시승강장",
+        "택시정류장",
+        "TAXI STAND",
+        "TAXI"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "택시를 타는 곳",
+          "explanation": "택시를 기다렸다가 순서대로 타는 곳이에요.",
+          "keywords": [
+            [
+              "택시 승강장",
+              "택시를 타는 곳"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Taxi stand",
+          "explanation": "A designated place to wait and queue for a taxi.",
+          "keywords": [
+            [
+              "택시 승강장",
+              "Taxi stand"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "タクシー乗り場",
+          "explanation": "タクシーを待ち、順番に乗るための場所です。",
+          "keywords": [
+            [
+              "택시 승강장",
+              "タクシー乗り場"
+            ]
+          ]
+        }
+      },
+      "generated": "taxi-sign",
+      "context": "taxi"
+    },
+    {
+      "id": "korean",
+      "subcategory": "korean",
+      "korean": "한식",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": [
+        "한식",
+        "한식집",
+        "한식당",
+        "백반",
+        "비빔밥"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "한국 음식을 파는 식당",
+          "explanation": "한국 음식을 파는 식당이에요. ‘백반’은 보통 밥과 반찬이 함께 나오는 식사를 뜻해요.",
+          "keywords": [
+            [
+              "한식",
+              "한국 음식을 파는 식당"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Korean restaurant",
+          "explanation": "A restaurant serving Korean food. Baekban usually means a meal of rice with side dishes.",
+          "keywords": [
+            [
+              "한식",
+              "Korean restaurant"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "韓国料理店",
+          "explanation": "韓国料理の店です。「백반」は一般に、ご飯とおかずを組み合わせた食事を指します。",
+          "keywords": [
+            [
+              "한식",
+              "韓国料理店"
+            ]
+          ]
+        }
+      },
+      "generated": "korean"
+    },
+    {
+      "id": "chinese",
+      "subcategory": "chinese",
+      "korean": "중화요리",
+      "difficulty": 2,
+      "brand": null,
+      "aliases": [
+        "중화요리",
+        "중식",
+        "중식당",
+        "중국집",
+        "짜장면",
+        "짬뽕"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "중국식 음식을 파는 식당",
+          "explanation": "중국식 음식을 파는 식당이에요. 한국에서는 짜장면이나 짬뽕을 파는 곳에 자주 보여요.",
+          "keywords": [
+            [
+              "중화요리",
+              "중국식 음식을 파는 식당"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Chinese restaurant",
+          "explanation": "A Chinese restaurant. In Korea, this sign often appears at places serving jajangmyeon and jjamppong.",
+          "keywords": [
+            [
+              "중화요리",
+              "Chinese restaurant"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "中華料理店",
+          "explanation": "中華料理の店です。韓国ではジャージャー麺やチャンポンを提供する店でよく見かけます。",
+          "keywords": [
+            [
+              "중화요리",
+              "中華料理店"
+            ]
+          ]
+        }
+      },
+      "generated": "chinese"
+    },
+    {
+      "id": "japanese",
+      "subcategory": "japanese",
+      "korean": "일식",
+      "difficulty": 2,
+      "brand": null,
+      "aliases": [
+        "일식",
+        "일식집",
+        "일식당",
+        "초밥",
+        "우동"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "일본 음식을 파는 식당",
+          "explanation": "일본 음식을 파는 식당이에요. ‘초밥’은 스시, ‘우동’은 우동 국수를 뜻해요.",
+          "keywords": [
+            [
+              "일식",
+              "일본 음식을 파는 식당"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Japanese restaurant",
+          "explanation": "A restaurant serving Japanese food. Chobap means sushi and udong means udon noodles.",
+          "keywords": [
+            [
+              "일식",
+              "Japanese restaurant"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "和食店",
+          "explanation": "日本料理の店です。「초밥」は寿司、「우동」はうどんを意味します。",
+          "keywords": [
+            [
+              "일식",
+              "和食店"
+            ]
+          ]
+        }
+      },
+      "generated": "japanese"
+    },
+    {
+      "id": "lotteria",
+      "subcategory": "franchise",
+      "korean": "롯데리아",
+      "difficulty": 2,
+      "brand": "lotteria",
+      "aliases": [
+        "롯데리아",
+        "LOTTERIA"
+      ],
+      "translations": {
+        "ko": {
+          "meaning": "롯데리아 패스트푸드점",
+          "explanation": "롯데리아 브랜드의 음식점이에요. 여러 지점에서 같은 브랜드 이름과 간판을 사용해요.",
+          "keywords": [
+            [
+              "롯데리아",
+              "롯데리아 패스트푸드점"
+            ]
+          ]
+        },
+        "en": {
+          "meaning": "Lotteria fast food restaurant",
+          "explanation": "This sign identifies the Lotteria fast food brand. Many branches share this name and signage.",
+          "keywords": [
+            [
+              "롯데리아",
+              "Lotteria fast food restaurant"
+            ]
+          ]
+        },
+        "ja": {
+          "meaning": "ロッテリア",
+          "explanation": "ロッテリアのファストフード店です。複数の店舗で同じブランド名や看板を使います。",
+          "keywords": [
+            [
+              "롯데리아",
+              "ロッテリア"
+            ]
+          ]
+        }
+      },
+      "generated": "lotteria"
+    }
+  ]
+}
