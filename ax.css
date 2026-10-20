@@ -400,6 +400,8 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .camera-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 .camera-actions button { flex: 1; min-width: 130px; }
 .camera-panel .text-btn { font-size: 12px; }
+.camera-text-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 7px; }
+.camera-text-actions .text-btn { width: auto; }
 .crop-stage { position: relative; max-width: 100%; touch-action: none; cursor: crosshair; }
 .crop-stage img { display: block; width: 100%; height: auto; }
 .crop-box { display: none; position: absolute; border: 2px solid #f6c765; box-shadow: 0 0 0 9999px #0a211d88; pointer-events: none; }
@@ -414,10 +416,34 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .scan-progress { height: 5px; background: #cee3d5; border-radius: 10px; overflow: hidden; margin-top: 10px; }
 .scan-progress span { display: block; height: 100%; background: var(--teal); transition: width .2s; }
 .scan-result { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 22px; }
+.travel-result { border: 1px solid var(--line); border-radius: 22px; padding: 0; overflow: hidden; background: #fff; }
+.travel-result-hero { padding: 22px; background: linear-gradient(145deg, #e5f3ed, #f5f8f2); }
+.result-status-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 19px; }
 .result-badge { display: inline-flex; padding: 7px 10px; border-radius: 99px; color: var(--teal); background: var(--teal-soft); font-size: 12px; font-weight: 800; }
+.result-badge svg { width: 15px; height: 15px; margin-right: 5px; }
+.confidence-pill { color: #526e61; font-size: 11px; font-weight: 750; }
+.travel-kicker { color: var(--teal); font-size: 11px; font-weight: 850; letter-spacing: .08em; }
 .scan-result h3 { font-size: 31px; letter-spacing: -.05em; margin: 13px 0 7px; }
 .scan-result .result-meaning { color: var(--teal); font-size: 20px; font-weight: 800; }
 .scan-result p { font-size: 14px; line-height: 1.75; color: var(--muted); }
+.travel-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+.travel-info-grid > div { display: grid; gap: 6px; padding: 16px 18px; background: #fff; }
+.travel-info-grid span { color: var(--muted); font-size: 11px; font-weight: 750; }
+.travel-info-grid strong { font-size: 13px; line-height: 1.45; }
+.travel-sections { display: grid; gap: 0; padding: 4px 20px; }
+.travel-sections section { padding: 18px 0; border-bottom: 1px solid #edf1ed; }
+.travel-sections section:last-child { border-bottom: 0; }
+.travel-sections h4 { margin: 0 0 8px; color: var(--ink); font-size: 14px; }
+.travel-sections p { margin: 0; }
+.useful-language ul { display: grid; gap: 9px; list-style: none; padding: 0; margin: 0; }
+.useful-language li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 13px; border-radius: 13px; background: var(--teal-soft); }
+.useful-language li strong { font-size: 15px; }
+.useful-language li > span:last-child { grid-column: 1 / -1; color: #47645c; font-size: 12px; }
+.phrase-pronunciation { align-self: center; color: var(--teal); font-size: 11px; font-weight: 750; }
+.travel-disclaimer { margin: 0; padding: 13px 20px; background: #fff9ed; border-top: 1px solid #f4e5c7; color: #795f31 !important; font-size: 11px !important; }
+.travel-result-actions { padding: 18px 20px 20px; }
+.travel-result-actions .secondary-btn { width: 100%; }
+.travel-result-actions .source-links { margin-top: 13px; }
 .candidate-list { display: grid; gap: 9px; margin-top: 14px; }
 .candidate-list button { padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: white; color: var(--ink); text-align: left; display: flex; gap: 12px; align-items: center; }
 .candidate-list img { width: 58px; height: 58px; object-fit: cover; border-radius: 9px; }
@@ -517,6 +543,9 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
   .camera-viewport video { height: 370px; }
   .camera-placeholder { padding: 25px 18px; }
   .scan-form { padding: 21px; border-radius: 20px; }
+  .travel-info-grid { grid-template-columns: 1fr; }
+  .travel-result-hero { padding: 19px; }
+  .travel-sections { padding-left: 17px; padding-right: 17px; }
   .source-row { grid-template-columns: 80px 1fr; gap: 14px; padding: 15px; }
   .source-row img { width: 80px; height: 85px; }
 }

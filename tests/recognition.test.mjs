@@ -20,6 +20,13 @@ test('catalog has four categories and twelve complete subcategories', () => {
       assert.ok(c.translations[lang].meaning);
       assert.ok(c.translations[lang].explanation);
       assert.ok(c.translations[lang].keywords.length);
+      assert.ok(c.travelGuide.experience[lang]);
+    }
+    assert.ok(c.travelGuide.phrases.length >= 2);
+    for (const phrase of c.travelGuide.phrases) {
+      assert.ok(phrase.korean);
+      assert.ok(phrase.romanization);
+      for (const lang of ['ko', 'en', 'ja']) assert.ok(phrase.meaning[lang]);
     }
     assert.equal(c.images.filter(i => i.role === 'primary').length, 1);
     for (const image of c.images) {

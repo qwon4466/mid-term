@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "guides": [
+    {
+      "sign": "pharmacy",
+      "experience": {
+        "ko": "처방전 약을 조제하거나 일반의약품을 사고 약사에게 복용 방법을 물어볼 수 있어요. 취급 품목과 외국어 응대 여부는 약국마다 달라요.",
+        "en": "You can fill a prescription, buy over-the-counter medicine, and ask a pharmacist how to take it. Products and language support vary by pharmacy.",
+        "ja": "処方薬の調剤、市販薬の購入、薬剤師への服用方法の相談ができます。取扱商品や外国語対応は薬局によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "감기약 있어요?",
+          "romanization": "Gamgi-yak isseoyo?",
+          "meaning": { "ko": "감기약이 있는지 묻는 말", "en": "Do you have cold medicine?", "ja": "風邪薬はありますか？" }
+        },
+        {
+          "korean": "이 약은 어떻게 먹어요?",
+          "romanization": "I yageun eotteoke meogeoyo?",
+          "meaning": { "ko": "약 복용 방법을 묻는 말", "en": "How should I take this medicine?", "ja": "この薬はどう飲みますか？" }
+        }
+      ]
+    },
+    {
+      "sign": "hospital",
+      "experience": {
+        "ko": "접수한 뒤 의사의 진료를 받을 수 있어요. 진료과목, 예약 필요 여부, 외국어 진료 가능 여부를 먼저 확인하는 것이 좋아요.",
+        "en": "You can register and see a doctor. Check the specialty, whether an appointment is required, and whether interpretation is available.",
+        "ja": "受付後に医師の診察を受けられます。診療科、予約の要否、外国語対応の有無を先に確認すると安心です。"
+      },
+      "phrases": [
+        {
+          "korean": "진료받고 싶어요.",
+          "romanization": "Jillyo-batgo sipeoyo.",
+          "meaning": { "ko": "진료를 요청하는 말", "en": "I would like to see a doctor.", "ja": "診察を受けたいです。" }
+        },
+        {
+          "korean": "영어로 상담할 수 있어요?",
+          "romanization": "Yeongeoro sangdamhal su isseoyo?",
+          "meaning": { "ko": "영어 상담이 가능한지 묻는 말", "en": "Can I speak with someone in English?", "ja": "英語で相談できますか？" }
+        }
+      ]
+    },
+    {
+      "sign": "mega",
+      "experience": {
+        "ko": "카운터나 키오스크에서 커피와 음료를 주문할 수 있어요. 매장 이용과 포장 가능 여부는 지점마다 달라요.",
+        "en": "Order coffee and other drinks at the counter or a kiosk. Seating and takeaway options vary by branch.",
+        "ja": "カウンターやキオスクでコーヒーや飲み物を注文できます。店内利用や持ち帰りの対応は店舗によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "아이스 아메리카노 한 잔 주세요.",
+          "romanization": "Aiseu amerikano han jan juseyo.",
+          "meaning": { "ko": "아이스 아메리카노 한 잔을 주문하는 말", "en": "One iced Americano, please.", "ja": "アイスアメリカーノを一杯ください。" }
+        },
+        {
+          "korean": "포장해 주세요.",
+          "romanization": "Pojanghae juseyo.",
+          "meaning": { "ko": "포장을 요청하는 말", "en": "To go, please.", "ja": "持ち帰りでお願いします。" }
+        }
+      ]
+    },
+    {
+      "sign": "starbucks",
+      "experience": {
+        "ko": "카운터나 앱으로 커피와 음료를 주문하고 매장에서 쉬거나 포장할 수 있어요. 좌석과 운영 방식은 지점마다 달라요.",
+        "en": "Order coffee and drinks at the counter or in the app, then stay or take your order away. Seating and service vary by branch.",
+        "ja": "カウンターやアプリでコーヒーや飲み物を注文し、店内利用または持ち帰りができます。座席や運営方法は店舗によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "아이스 아메리카노 한 잔 주세요.",
+          "romanization": "Aiseu amerikano han jan juseyo.",
+          "meaning": { "ko": "아이스 아메리카노 한 잔을 주문하는 말", "en": "One iced Americano, please.", "ja": "アイスアメリカーノを一杯ください。" }
+        },
+        {
+          "korean": "매장에서 먹고 갈게요.",
+          "romanization": "Maejangeseo meokgo galgeyo.",
+          "meaning": { "ko": "매장에서 이용하겠다는 말", "en": "For here, please.", "ja": "店内でいただきます。" }
+        }
+      ]
+    },
+    {
+      "sign": "cafe",
+      "experience": {
+        "ko": "커피와 음료를 주문하고 잠시 쉬거나 대화할 수 있어요. 디저트, 키오스크, 화장실, 콘센트 제공 여부는 매장마다 달라요.",
+        "en": "You can order coffee or another drink and take a break. Desserts, kiosks, restrooms, and power outlets vary by café.",
+        "ja": "コーヒーや飲み物を注文して休憩できます。デザート、キオスク、トイレ、コンセントの有無は店によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "추천 메뉴가 뭐예요?",
+          "romanization": "Chucheon menyuga mwoyeyo?",
+          "meaning": { "ko": "추천 메뉴를 묻는 말", "en": "What do you recommend?", "ja": "おすすめのメニューは何ですか？" }
+        },
+        {
+          "korean": "포장해 주세요.",
+          "romanization": "Pojanghae juseyo.",
+          "meaning": { "ko": "포장을 요청하는 말", "en": "To go, please.", "ja": "持ち帰りでお願いします。" }
+        }
+      ]
+    },
+    {
+      "sign": "subway",
+      "experience": {
+        "ko": "표지판을 따라 역으로 들어가 교통카드나 승차권으로 지하철을 이용할 수 있어요. 목적지와 노선 방향, 출구 번호를 함께 확인하세요.",
+        "en": "Follow the sign into the station and travel with a transit card or ticket. Check your line, direction, destination, and exit number.",
+        "ja": "案内に従って駅に入り、交通カードや乗車券で地下鉄を利用できます。路線、方向、目的地、出口番号を確認してください。"
+      },
+      "phrases": [
+        {
+          "korean": "이 역은 어디예요?",
+          "romanization": "I yeogeun eodiyeyo?",
+          "meaning": { "ko": "현재 역을 묻는 말", "en": "Which station is this?", "ja": "ここは何駅ですか？" }
+        },
+        {
+          "korean": "몇 번 출구예요?",
+          "romanization": "Myeot beon chulgu-yeyo?",
+          "meaning": { "ko": "출구 번호를 묻는 말", "en": "Which exit should I take?", "ja": "何番出口ですか？" }
+        }
+      ]
+    },
+    {
+      "sign": "bus",
+      "experience": {
+        "ko": "노선 번호와 진행 방향을 확인한 뒤 버스를 기다리는 곳이에요. 승차할 때 교통카드를 찍고 하차 전에 벨을 누르는 경우가 일반적이에요.",
+        "en": "Check the route number and direction, then wait here for the bus. Riders commonly tap a transit card when boarding and press the stop button before getting off.",
+        "ja": "路線番号と方向を確認してバスを待つ場所です。乗車時に交通カードをタッチし、降車前にボタンを押すのが一般的です。"
+      },
+      "phrases": [
+        {
+          "korean": "이 버스가 서울역에 가요?",
+          "romanization": "I beoseuga Seoul-yeoge gayo?",
+          "meaning": { "ko": "이 버스가 서울역에 가는지 묻는 말", "en": "Does this bus go to Seoul Station?", "ja": "このバスはソウル駅に行きますか？" }
+        },
+        {
+          "korean": "여기에서 내려요?",
+          "romanization": "Yeogieseo naeryeoyo?",
+          "meaning": { "ko": "여기에서 내리는지 묻는 말", "en": "Do I get off here?", "ja": "ここで降りますか？" }
+        }
+      ]
+    },
+    {
+      "sign": "taxi",
+      "experience": {
+        "ko": "줄을 서서 택시를 기다린 뒤 순서대로 승차하는 곳이에요. 목적지 주소나 지도 화면을 기사에게 보여주면 도움이 돼요.",
+        "en": "Queue here and take the next available taxi. Showing the driver the destination address or a map can help.",
+        "ja": "列に並んでタクシーを待ち、順番に乗る場所です。目的地の住所や地図を運転手に見せると便利です。"
+      },
+      "phrases": [
+        {
+          "korean": "서울역으로 가 주세요.",
+          "romanization": "Seoul-yeogeuro ga juseyo.",
+          "meaning": { "ko": "서울역으로 가 달라는 말", "en": "Please take me to Seoul Station.", "ja": "ソウル駅までお願いします。" }
+        },
+        {
+          "korean": "카드로 결제할게요.",
+          "romanization": "Kadeuro gyeoljehalgeyo.",
+          "meaning": { "ko": "카드로 결제하겠다는 말", "en": "I will pay by card.", "ja": "カードで支払います。" }
+        }
+      ]
+    },
+    {
+      "sign": "korean",
+      "experience": {
+        "ko": "밥, 국, 반찬이 함께 나오는 한국식 식사를 기대할 수 있어요. 주문 방식과 반찬 리필, 매운 정도는 식당마다 달라요.",
+        "en": "Expect a Korean meal that may include rice, soup, and side dishes. Ordering, side-dish refills, and spice levels vary by restaurant.",
+        "ja": "ご飯、スープ、おかずを組み合わせた韓国式の食事が期待できます。注文方法、おかずのおかわり、辛さは店によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "두 명이에요.",
+          "romanization": "Du myeong-ieyo.",
+          "meaning": { "ko": "두 명이라고 알리는 말", "en": "A table for two.", "ja": "二人です。" }
+        },
+        {
+          "korean": "추천 메뉴가 뭐예요?",
+          "romanization": "Chucheon menyuga mwoyeyo?",
+          "meaning": { "ko": "추천 메뉴를 묻는 말", "en": "What do you recommend?", "ja": "おすすめのメニューは何ですか？" }
+        }
+      ]
+    },
+    {
+      "sign": "chinese",
+      "experience": {
+        "ko": "짜장면, 짬뽕, 탕수육처럼 한국에서 익숙한 중화요리를 주문할 수 있어요. 맵기와 1인 주문 가능 여부는 메뉴마다 달라요.",
+        "en": "Expect Korean-style Chinese dishes such as jajangmyeon, jjamppong, and tangsuyuk. Spice levels and single-person portions vary.",
+        "ja": "ジャージャー麺、チャンポン、酢豚など韓国式の中華料理を注文できます。辛さや一人前の注文可否はメニューによって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "짜장면 하나 주세요.",
+          "romanization": "Jjajangmyeon hana juseyo.",
+          "meaning": { "ko": "짜장면 한 그릇을 주문하는 말", "en": "One jajangmyeon, please.", "ja": "ジャージャー麺を一つください。" }
+        },
+        {
+          "korean": "덜 맵게 해 주세요.",
+          "romanization": "Deol maepge hae juseyo.",
+          "meaning": { "ko": "덜 맵게 요청하는 말", "en": "Please make it less spicy.", "ja": "辛さを控えめにしてください。" }
+        }
+      ]
+    },
+    {
+      "sign": "japanese",
+      "experience": {
+        "ko": "초밥, 우동, 돈가스 같은 일본식 음식을 주문할 수 있어요. 주문 방식과 메뉴 구성은 식당마다 달라요.",
+        "en": "Expect Japanese-style dishes such as sushi, udon, or pork cutlet. Ordering and menu options vary by restaurant.",
+        "ja": "寿司、うどん、とんかつなどの日本料理を注文できます。注文方法やメニュー構成は店によって異なります。"
+      },
+      "phrases": [
+        {
+          "korean": "초밥 하나 주세요.",
+          "romanization": "Chobap hana juseyo.",
+          "meaning": { "ko": "초밥을 주문하는 말", "en": "One order of sushi, please.", "ja": "お寿司を一つください。" }
+        },
+        {
+          "korean": "포장해 주세요.",
+          "romanization": "Pojanghae juseyo.",
+          "meaning": { "ko": "포장을 요청하는 말", "en": "To go, please.", "ja": "持ち帰りでお願いします。" }
+        }
+      ]
+    },
+    {
+      "sign": "lotteria",
+      "experience": {
+        "ko": "버거, 사이드 메뉴, 음료를 카운터나 키오스크에서 주문하는 패스트푸드점이에요. 매장 식사와 포장을 선택할 수 있어요.",
+        "en": "This is a fast-food restaurant where you order burgers, sides, and drinks at a counter or kiosk, for dine-in or takeaway.",
+        "ja": "バーガー、サイド、飲み物をカウンターやキオスクで注文するファストフード店です。店内利用と持ち帰りを選べます。"
+      },
+      "phrases": [
+        {
+          "korean": "불고기버거 세트 하나 주세요.",
+          "romanization": "Bulgogi-beogeo seteu hana juseyo.",
+          "meaning": { "ko": "불고기버거 세트 하나를 주문하는 말", "en": "One bulgogi burger set, please.", "ja": "プルコギバーガーセットを一つください。" }
+        },
+        {
+          "korean": "매장에서 먹고 갈게요.",
+          "romanization": "Maejangeseo meokgo galgeyo.",
+          "meaning": { "ko": "매장에서 이용하겠다는 말", "en": "For here, please.", "ja": "店内でいただきます。" }
+        }
+      ]
+    }
+  ]
+}

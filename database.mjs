@@ -17,16 +17,20 @@ export function openDatabase(filename = path.join(root, 'data/signs.sqlite')) {
     CREATE TABLE IF NOT EXISTS brands (id TEXT PRIMARY KEY, name TEXT NOT NULL, homepage TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS signs (id TEXT PRIMARY KEY, subcategory_id TEXT NOT NULL REFERENCES subcategories(id), brand_id TEXT REFERENCES brands(id), korean TEXT NOT NULL, difficulty INTEGER NOT NULL CHECK(difficulty BETWEEN 1 AND 3));
     CREATE TABLE IF NOT EXISTS translations (sign_id TEXT NOT NULL REFERENCES signs(id), language TEXT NOT NULL CHECK(language IN ('ko','en','ja')), meaning TEXT NOT NULL, explanation TEXT NOT NULL, keywords TEXT NOT NULL, PRIMARY KEY(sign_id, language));
+    CREATE TABLE IF NOT EXISTS travel_guides (sign_id TEXT PRIMARY KEY REFERENCES signs(id), experience TEXT NOT NULL, phrases TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS aliases (sign_id TEXT NOT NULL REFERENCES signs(id), text TEXT NOT NULL, normalized TEXT NOT NULL, PRIMARY KEY(sign_id, normalized));
     CREATE INDEX IF NOT EXISTS aliases_lookup ON aliases(normalized);
     CREATE TABLE IF NOT EXISTS images (id TEXT PRIMARY KEY, sign_id TEXT NOT NULL REFERENCES signs(id), path TEXT NOT NULL, portrait_path TEXT, role TEXT NOT NULL CHECK(role IN ('primary','context')), kind TEXT NOT NULL CHECK(kind IN ('photo','illustration')), metadata TEXT NOT NULL);
     CREATE UNIQUE INDEX IF NOT EXISTS one_primary_image ON images(sign_id) WHERE role = 'primary';`);
-  if (!db.prepare('SELECT count(*) n FROM signs').get().n) seedDatabase(db);
+  const signCount = db.prepare('SELECT count(*) n FROM signs').get().n;
+  const guideCount = db.prepare('SELECT count(*) n FROM travel_guides').get().n;
+  if (!signCount || guideCount !== signCount) seedDatabase(db);
   return db;
 }
 
 export function seedDatabase(db) {
   const seed = JSON.parse(readFileSync(path.join(root, 'data/seed.json'), 'utf8'));
+  const travelGuides = JSON.parse(readFileSync(path.join(root, 'data/travel-guides.json'), 'utf8')).guides;
   const photos = JSON.parse(readFileSync(path.join(root, 'data/photo-sources.json'), 'utf8'));
   const put = (table, values) => {
     const keys = Object.keys(values);
@@ -56,6 +60,7 @@ export function seedDatabase(db) {
         put('images', { id: `${s.id}-context`, sign_id: s.id, path: context.path, portrait_path: null, role: 'context', kind: 'photo', metadata: JSON.stringify(context) });
       }
     });
+    travelGuides.forEach(guide => put('travel_guides', { sign_id: guide.sign, experience: JSON.stringify(guide.experience), phrases: JSON.stringify(guide.phrases) }));
     db.exec('COMMIT');
   } catch (error) { db.exec('ROLLBACK'); throw error; }
 }
@@ -67,10 +72,12 @@ export function getCatalog(db) {
     const images = db.prepare('SELECT * FROM images WHERE sign_id = ? ORDER BY role DESC').all(s.id).map(i => ({ id: i.id, path: i.path, portrait: i.portrait_path, role: i.role, kind: i.kind, ...JSON.parse(i.metadata) }));
     const primary = images.find(i => i.role === 'primary');
     const translations = Object.fromEntries(db.prepare('SELECT * FROM translations WHERE sign_id = ?').all(s.id).map(tr => [tr.language, { meaning: tr.meaning, explanation: tr.explanation, keywords: JSON.parse(tr.keywords) }]));
+    const guideRow = db.prepare('SELECT * FROM travel_guides WHERE sign_id = ?').get(s.id);
+    const travelGuide = guideRow ? { experience: JSON.parse(guideRow.experience), phrases: JSON.parse(guideRow.phrases) } : { experience: {}, phrases: [] };
     return { id: s.id, category: s.category_id, subcategory: s.subcategory_id, brand: s.brand_id, brandName: s.brand_name, korean: s.korean, difficulty: s.difficulty,
-      image: primary.path, portrait: primary.portrait || primary.path, imageKind: primary.kind, images, translations, aliases: db.prepare('SELECT text FROM aliases WHERE sign_id = ?').all(s.id).map(a => a.text), ...translations.en };
+      image: primary.path, portrait: primary.portrait || primary.path, imageKind: primary.kind, images, translations, travelGuide, aliases: db.prepare('SELECT text FROM aliases WHERE sign_id = ?').all(s.id).map(a => a.text), ...translations.en };
   });
-  return { version: 1, categories, subcategories, cards };
+  return { version: 2, categories, subcategories, cards };
 }
 
 if (process.argv.includes('--seed')) {

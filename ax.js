@@ -389,6 +389,11 @@
     "en": "Use phone camera",
     "ja": "スマホで撮影"
   },
+  "sampleScan": {
+    "ko": "샘플 간판 결과 보기",
+    "en": "Preview a sample result",
+    "ja": "サンプル結果を見る"
+  },
   "invalidImage": {
     "ko": "열 수 없는 사진이에요. JPG·PNG·WebP 사진을 선택해주세요.",
     "en": "This image cannot be opened. Choose a JPG, PNG or WebP photo.",
@@ -423,6 +428,46 @@
     "ko": "선택한 간판",
     "en": "Your selected sign",
     "ja": "選択した看板"
+  },
+  "placeName": {
+    "ko": "장소·가게명",
+    "en": "Place or business",
+    "ja": "場所・店舗名"
+  },
+  "placeInformation": {
+    "ko": "가게 정보",
+    "en": "Place information",
+    "ja": "店舗情報"
+  },
+  "easyExplanation": {
+    "ko": "쉽게 설명하면",
+    "en": "In simple terms",
+    "ja": "わかりやすく言うと"
+  },
+  "expectedExperience": {
+    "ko": "기대할 수 있는 경험",
+    "en": "What to expect",
+    "ja": "期待できること"
+  },
+  "usefulKorean": {
+    "ko": "바로 쓰는 한국어",
+    "en": "Useful Korean",
+    "ja": "すぐ使える韓国語"
+  },
+  "recognizedSign": {
+    "ko": "인식한 간판",
+    "en": "Recognized sign",
+    "ja": "認識した看板"
+  },
+  "recognitionConfidence": {
+    "ko": "인식 신뢰도 {n}%",
+    "en": "Recognition confidence {n}%",
+    "ja": "認識信頼度 {n}%"
+  },
+  "generalExperienceNotice": {
+    "ko": "이 내용은 해당 업종에서 일반적으로 기대할 수 있는 경험이며 실제 매장과 다를 수 있어요.",
+    "en": "This describes a typical experience for this type of place; the actual location may differ.",
+    "ja": "この内容は同じ業種で一般的に期待できるもので、実際の店舗とは異なる場合があります。"
   },
   "candidateTitle": {
     "ko": "이 간판이 맞나요?",
@@ -1070,7 +1115,7 @@ function renderDetail() {
       }
 
 
-      var camera = { stream: null, photo: null, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, selected: null, notice: "", error: false, progress: 0, opening: false };
+      var camera = { stream: null, photo: null, demo: false, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, selected: null, notice: "", error: false, progress: 0, opening: false };
       function stopCamera() {
         camera.request++;
         camera.opening = false;
@@ -1083,8 +1128,23 @@ function renderDetail() {
         if (camera.worker) { camera.worker.terminate().catch(function () {}); camera.worker = null; }
       }
       function clearPhoto() {
-        if (camera.url) URL.revokeObjectURL(camera.url);
-        camera.photo = null; camera.url = ""; camera.crop = null; camera.result = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false;
+        if (camera.url && !camera.demo) URL.revokeObjectURL(camera.url);
+        camera.photo = null; camera.demo = false; camera.url = ""; camera.crop = null; camera.result = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false;
+      }
+      function showSampleScan(id) {
+        var card = findCard(id) || cards[0];
+        stopCamera(); cancelOcr(); clearPhoto();
+        screen = "camera";
+        camera.photo = { demo: true };
+        camera.demo = true;
+        camera.ratio = 4 / 3;
+        camera.url = card.image;
+        camera.text = card.korean;
+        camera.confidence = 98;
+        camera.edited = false;
+        camera.result = { status: "matched", matchedId: card.id, candidates: [{ id: card.id }], scope: card.brand ? "brand" : "type", requiresConfirmation: false };
+        camera.selected = card.id;
+        render();
       }
       async function openCamera() {
         stopCamera(); cancelOcr(); clearPhoto();
@@ -1157,14 +1217,40 @@ function renderDetail() {
         return '<div class="scan-status ' + (camera.error ? 'error' : '') + '" role="status"><span id="ocrStatusText">' + escapeHtml(camera.notice || t("ocrLoading")) +
           '</span>' + (camera.busy ? '<div class="scan-progress" role="progressbar" aria-label="' + escapeHtml(t("readText")) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + camera.progress + '"><span id="ocrProgress" style="width:' + camera.progress + '%"></span></div>' : '') + '</div>';
       }
+      function normalizeDetected(value) {
+        return String(value || "").normalize("NFKC").toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]/gu, "");
+      }
+      function detectedPlaceName(card) {
+        if (card.brandName) return card.brandName;
+        var aliases = card.aliases.map(normalizeDetected);
+        var lines = camera.text.split(/[\n\r|,;:]+/).map(function (line) { return line.trim(); }).filter(Boolean).sort(function (a, b) { return b.length - a.length; });
+        var matchedLine = lines.find(function (line) {
+          var normalized = normalizeDetected(line);
+          return normalized && aliases.some(function (alias) { return alias && (normalized.includes(alias) || alias.includes(normalized)); });
+        });
+        return (matchedLine || card.korean).slice(0, 80);
+      }
       function renderScanResult() {
         if (camera.selected) {
           var card = findCard(camera.selected);
           var content = cardContent(card);
-          return '<div class="scan-result"><span class="result-badge">' + icon("check") + ' ' + t(camera.result && camera.result.matchedId === card.id ? "matched" : "confirmed") +
-            '</span><h3 lang="ko">' + escapeHtml(card.korean) + '</h3><div class="result-meaning">' + escapeHtml(content.meaning) + '</div><p>' + escapeHtml(content.explanation) +
-            '</p><p>' + (camera.result && camera.result.matchedId === card.id ? t(card.brand ? "brandMatch" : "typeMatch") : t("category")) + ' · ' + escapeHtml(categoryLabel(card.category)) + ' / ' + escapeHtml(subcategoryLabel(card.subcategory)) + '</p>' +
-            '<button class="secondary-btn" data-action="save-review" data-id="' + card.id + '">' + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button>' + mapLinks(card) + '</div>';
+          var guide = card.travelGuide || { experience: {}, phrases: [] };
+          var experience = guide.experience[state.language] || guide.experience.en || content.explanation;
+          var placeName = detectedPlaceName(card);
+          var confidence = camera.confidence > 0 ? '<span class="confidence-pill">' + t("recognitionConfidence", { n: Math.round(camera.confidence) }) + '</span>' : '';
+          var phrases = guide.phrases.map(function (phrase) {
+            var phraseMeaning = phrase.meaning[state.language] || phrase.meaning.en;
+            return '<li><strong lang="ko">' + escapeHtml(phrase.korean) + '</strong><span class="phrase-pronunciation">' + escapeHtml(phrase.romanization) + '</span><span>' + escapeHtml(phraseMeaning) + '</span></li>';
+          }).join("");
+          return '<article class="scan-result travel-result"><div class="travel-result-hero"><div class="result-status-row"><span class="result-badge">' + icon("check") + ' ' + t(camera.result && camera.result.matchedId === card.id ? "matched" : "confirmed") + '</span>' + confidence +
+            '</div><span class="travel-kicker">' + t("placeName") + '</span><h3 lang="ko">' + escapeHtml(placeName) + '</h3><div class="result-meaning">' + escapeHtml(content.meaning) + '</div></div>' +
+            '<div class="travel-info-grid"><div><span>' + t("category") + '</span><strong>' + escapeHtml(categoryLabel(card.category)) + ' · ' + escapeHtml(subcategoryLabel(card.subcategory)) + '</strong></div>' +
+            '<div><span>' + t("recognizedSign") + '</span><strong lang="ko">' + escapeHtml(card.korean) + '</strong></div></div>' +
+            '<div class="travel-sections"><section><h4>' + t("placeInformation") + '</h4><p>' + escapeHtml(content.meaning) + '</p></section>' +
+            '<section><h4>' + t("easyExplanation") + '</h4><p>' + escapeHtml(content.explanation) + '</p></section>' +
+            '<section><h4>' + t("expectedExperience") + '</h4><p>' + escapeHtml(experience) + '</p></section>' +
+            (phrases ? '<section class="useful-language"><h4>' + t("usefulKorean") + '</h4><ul>' + phrases + '</ul></section>' : '') + '</div>' +
+            '<p class="travel-disclaimer">' + t("generalExperienceNotice") + '</p><div class="travel-result-actions"><button class="secondary-btn" data-action="save-review" data-id="' + card.id + '">' + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button>' + mapLinks(card) + '</div></article>';
         }
         if (!camera.result) return "";
         if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + mapSearchLinks(camera.text) + '</div>';
@@ -1187,7 +1273,7 @@ function renderDetail() {
           '</p></div></div><div class="scan-layout"><section class="camera-panel"><div class="camera-viewport">' + viewport + '</div>' +
           (camera.photo ? '<p class="crop-hint">' + t("cropHint") + '</p><button class="text-btn" data-action="reset-crop">' + t("resetCrop") + '</button>' : '') +
           '<div class="camera-actions">' + buttons + '<button class="secondary-btn" data-action="upload" ' + (camera.busy ? 'disabled' : '') + '>' + t("upload") + '</button></div>' +
-          '<button class="text-btn" data-action="native-camera" ' + (camera.busy ? 'disabled' : '') + '>' + t("nativeCamera") + '</button><div class="scan-note">' + icon("check") + '<span>' + t("cameraPrivacy") + '</span></div>' +
+          '<div class="camera-text-actions"><button class="text-btn" data-action="native-camera" ' + (camera.busy ? 'disabled' : '') + '>' + t("nativeCamera") + '</button><button class="text-btn" data-action="sample-scan" ' + (camera.busy ? 'disabled' : '') + '>' + t("sampleScan") + '</button></div><div class="scan-note">' + icon("check") + '<span>' + t("cameraPrivacy") + '</span></div>' +
           '</section><section class="scan-form"><h2>' + t("scanFormTitle") + '</h2><p>' + t("textHint") + '</p><div id="cameraNotice">' + cameraNoticeMarkup() + '</div>' +
           (camera.busy ? '<button class="text-btn" data-action="cancel-ocr">' + t("cancelRecognition") + '</button>' : '') +
           '<form id="lookupForm"><label for="recognizedText">' + t("recognizedText") + '</label><textarea id="recognizedText" maxlength="2000" rows="3" placeholder="' + escapeHtml(t("textPlaceholder")) + '" ' + (camera.busy ? 'disabled' : '') + '>' +
@@ -1326,6 +1412,7 @@ function renderDetail() {
         else if (action === "nav-camera") navigate("camera");
         else if (action === "quick-camera") openQuickCamera();
         else if (action === "camera" || action === "camera-open") openCamera();
+        else if (action === "sample-scan") showSampleScan("mega");
         else if (action === "native-camera") { stopCamera(); render(); document.getElementById("captureInput").click(); }
         else if (action === "upload") { stopCamera(); render(); document.getElementById("uploadInput").click(); }
         else if (action === "capture") capturePhoto();
@@ -1401,5 +1488,10 @@ function renderDetail() {
           if (wrap) { wrap.classList.add("broken"); wrap.disabled = true; }
         }
       }, true);
-      render();
+      var previewId = new URLSearchParams(window.location.search).get("demo");
+      if (previewId && findCard(previewId)) {
+        state.languageChosen = true;
+        state.onboarded = true;
+        showSampleScan(previewId);
+      } else render();
     })();
