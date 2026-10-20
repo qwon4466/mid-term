@@ -621,7 +621,7 @@ function renderLanguageBar() {
         return '<header class="language-bar"><button class="brand" data-action="nav-home" aria-label="Sign by Sign"><span class="brand-mark">ㅅ</span>Sign by Sign</button>' +
           '<nav class="web-links" aria-label="' + escapeHtml(t("mainNavigation")) + '">' + links.map(function (item) {
             return '<button class="' + (screen === item[0] ? 'current' : '') + '" data-action="nav-' + item[0] + '" ' + (screen === item[0] ? 'aria-current="page"' : '') + '>' + t(item[1]) + '</button>';
-          }).join("") + '</nav><div class="header-tools"><button class="icon-btn" data-action="camera" aria-label="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button>' +
+          }).join("") + '</nav><div class="header-tools"><button class="icon-btn quick-camera-btn" data-action="quick-camera" aria-label="' + escapeHtml(t("camera")) + '" title="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button>' +
           '<button class="language-toggle" data-action="language-menu" aria-label="' + escapeHtml(t("language") + ": " + currentLanguageName()) + '">' + icon("globe") +
           '<span>' + currentLanguageName() + '</span><span aria-hidden="true">⌄</span></button></div></header>';
       }
@@ -1012,11 +1012,14 @@ function renderDetail() {
           (safeUrl(image.sourceUrl) ? ' · <a href="' + escapeHtml(image.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + t("originalSource") + '</a>' : '') + '</p>';
       }
       function sourceMarkup(card) { return sourceCredit(card.images.find(function (image) { return image.role === "primary"; })); }
-      function mapLinks(card) {
-        var query = encodeURIComponent(card.korean);
+      function mapSearchLinks(value) {
+        var text = String(value || "").replace(/\s+/g, " ").trim().slice(0, 120);
+        if (!text) return "";
+        var query = encodeURIComponent(text);
         return '<div class="source-links"><a href="https://map.naver.com/p/search/' + query + '" target="_blank" rel="noopener noreferrer">' + t("mapsNaver") +
           '</a><a href="https://www.google.com/maps/search/?api=1&query=' + query + '%20Korea" target="_blank" rel="noopener noreferrer">' + t("mapsGoogle") + '</a></div>';
       }
+      function mapLinks(card) { return mapSearchLinks(card.korean); }
       function filteredLibrary() {
         var query = libraryQuery.trim().toLocaleLowerCase();
         return cards.filter(function (c) {
@@ -1104,7 +1107,17 @@ function renderDetail() {
           camera.error = true; render();
         }
       }
-      async function usePhoto(file) {
+      function prefersNativeCamera() {
+        return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+          (navigator.maxTouchPoints > 1 && window.matchMedia && window.matchMedia("(max-width: 900px)").matches);
+      }
+      function openQuickCamera() {
+        languageMenuOpen = false;
+        if (!prefersNativeCamera()) { openCamera(); return; }
+        stopCamera(); cancelOcr(); clearPhoto(); screen = "camera"; render();
+        document.getElementById("captureInput").click();
+      }
+      async function usePhoto(file, autoAnalyze) {
         if (!file) return;
         stopCamera(); cancelOcr(); clearPhoto(); screen = "camera";
         if (file.size > 16 * 1024 * 1024) { camera.notice = t("largeImage"); camera.error = true; render(); return; }
@@ -1116,6 +1129,7 @@ function renderDetail() {
           if (!image.naturalWidth || !image.naturalHeight) throw new Error("Image is empty");
           if (request !== camera.request) { URL.revokeObjectURL(url); return; }
           camera.photo = file; camera.ratio = image.naturalWidth / image.naturalHeight; camera.url = url; camera.notice = ""; camera.error = false; render();
+          if (autoAnalyze) await readPhoto();
         } catch (_) {
           URL.revokeObjectURL(url);
           if (request !== camera.request) return;
@@ -1136,7 +1150,7 @@ function renderDetail() {
         var canvas = document.createElement("canvas");
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0);
-        canvas.toBlob(function (blob) { if (blob) usePhoto(blob); }, "image/jpeg", .93);
+        canvas.toBlob(function (blob) { if (blob) usePhoto(blob, true); }, "image/jpeg", .93);
       }
       function cameraNoticeMarkup() {
         if (!camera.notice && !camera.busy) return "";
@@ -1153,7 +1167,7 @@ function renderDetail() {
             '<button class="secondary-btn" data-action="save-review" data-id="' + card.id + '">' + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button>' + mapLinks(card) + '</div>';
         }
         if (!camera.result) return "";
-        if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p></div>';
+        if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + mapSearchLinks(camera.text) + '</div>';
         return '<div class="scan-result"><h2>' + t("candidateTitle") + '</h2><p>' + t("candidateBody") + '</p><div class="candidate-list">' +
           camera.result.candidates.map(function (candidate) {
             var c = findCard(candidate.id);
@@ -1276,8 +1290,8 @@ function renderDetail() {
           camera.busy = false; camera.notice = t("matchError"); camera.error = true; render();
         }
       }
-      document.getElementById("captureInput").addEventListener("change", function (event) { usePhoto(event.target.files[0]); event.target.value = ""; });
-      document.getElementById("uploadInput").addEventListener("change", function (event) { usePhoto(event.target.files[0]); event.target.value = ""; });
+      document.getElementById("captureInput").addEventListener("change", function (event) { usePhoto(event.target.files[0], true); event.target.value = ""; });
+      document.getElementById("uploadInput").addEventListener("change", function (event) { usePhoto(event.target.files[0], false); event.target.value = ""; });
       document.addEventListener("visibilitychange", function () { if (document.hidden) { stopCamera(); if (screen === "camera") render(); } });
       window.addEventListener("pagehide", function () { stopCamera(); cancelOcr(); if (camera.url) URL.revokeObjectURL(camera.url); });
       app.addEventListener("submit", function (event) { if (event.target.id === "lookupForm") { event.preventDefault(); lookupSign(true); } });
@@ -1310,6 +1324,7 @@ function renderDetail() {
 
         else if (action === "nav-library") navigate("library");
         else if (action === "nav-camera") navigate("camera");
+        else if (action === "quick-camera") openQuickCamera();
         else if (action === "camera" || action === "camera-open") openCamera();
         else if (action === "native-camera") { stopCamera(); render(); document.getElementById("captureInput").click(); }
         else if (action === "upload") { stopCamera(); render(); document.getElementById("uploadInput").click(); }

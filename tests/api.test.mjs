@@ -31,6 +31,12 @@ test('HTTP serves the full webpage and database catalog', async () => {
   assert.equal(page.status, 200);
   assert.match(page.headers.get('content-type'), /text\/html/);
   assert.match(await page.text(), /ax\.js/);
+  const client = await (await fetch(base + '/ax.js')).text();
+  const styles = await (await fetch(base + '/ax.css')).text();
+  assert.match(client, /data-action="quick-camera"/);
+  assert.match(client, /usePhoto\(event\.target\.files\[0\], true\)/);
+  assert.match(client, /mapSearchLinks\(camera\.text\)/);
+  assert.match(styles, /\.quick-camera-btn\s*\{/);
   const catalog = await (await fetch(base + '/api/catalog')).json();
   assert.equal(catalog.cards.length, 12);
   assert.equal(catalog.categories.length, 4);
