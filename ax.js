@@ -1,19 +1,26 @@
 (async function () {
       "use strict";
       var STORAGE_KEY = "sign-by-sign-ax-v1";
+      var mobileMode = window.SIGN_BY_SIGN_MODE === "mobile";
       var catalog;
       try {
-        var response = await fetch("/api/catalog", { cache: "no-store" });
+        var response = await fetch(mobileMode ? "./data/catalog.json" : "/api/catalog", { cache: "no-store" });
         if (!response.ok) throw new Error("Catalog unavailable");
         catalog = await response.json();
       } catch (_) {
-        document.getElementById("app").innerHTML = '<div class="startup-error"><h1>간판 데이터를 불러오지 못했어요</h1><p>이 웹페이지는 서버와 함께 실행합니다. 프로젝트 폴더에서 <code>npm start</code> 후 <code>http://localhost:4173</code>으로 접속하세요.</p><p>Could not connect. Start the server, then reload this page.</p><button class="primary-btn" id="reloadPage">다시 연결 · Retry</button></div>';
+        document.getElementById("app").innerHTML = '<div class="startup-error"><h1>간판 데이터를 불러오지 못했어요</h1><p>' + (mobileMode ? '앱에 포함된 데이터가 손상됐습니다. 앱을 다시 설치해 주세요.' : '이 웹페이지는 서버와 함께 실행합니다. 프로젝트 폴더에서 <code>npm start</code> 후 <code>http://localhost:4173</code>으로 접속하세요.') + '</p><p>Could not load the bundled sign catalog.</p><button class="primary-btn" id="reloadPage">다시 연결 · Retry</button></div>';
         document.getElementById("reloadPage").addEventListener("click", function () { location.reload(); });
         return;
       }
       var categories = [{ id: "all", label: { ko: "모든 간판", en: "All signs", ja: "すべての看板" } }].concat(catalog.categories);
       var subcategories = catalog.subcategories;
-      var cards = catalog.cards;
+      function validCommunityCard(incoming) {
+        return catalog.categories.some(function (category) { return category.id === incoming.category; }) &&
+          catalog.subcategories.some(function (subcategory) { return subcategory.id === incoming.subcategory && subcategory.category === incoming.category; }) &&
+          !catalog.cards.some(function (card) { return card.id === incoming.id; });
+      }
+      var publishedCards = window.SignNative ? window.SignNative.getPublishedCards() : [];
+      var cards = catalog.cards.concat(publishedCards.filter(validCommunityCard));
       var languages = [
         { code: "ko", name: "한국어" },
         { code: "en", name: "English" },
@@ -280,14 +287,14 @@
     "ja": "看板12枚・写真と学習用イメージ"
   },
   "settingsHint": {
-    "ko": "학습·복습 기록은 이 브라우저에 저장됩니다. 촬영 사진은 기기에서 문자를 읽는 데만 사용하며 서버에는 인식한 문구만 전송합니다. 사진 출처에서 실제 사진과 학습용 예시의 정보를 확인할 수 있어요.",
-    "en": "Your learning history stays in this browser. Photos are processed on your device; only recognized text is sent to the server. Image credits distinguish photos from illustrations.",
-    "ja": "学習記録はこのブラウザーに保存されます。写真は端末で処理し、読み取った文字だけをサーバーへ送信します。画像の出典で写真とイメージを確認できます。"
+    "ko": "학습 기록과 AI 수정 내용은 이 기기에 저장됩니다. 사진은 기본적으로 기기 안에서 분석하며, 동의한 새 간판 제보만 검토 대기열에 저장합니다.",
+    "en": "Learning history and AI corrections stay on this device. Photos are analyzed on-device by default; only consented new-sign reports enter the review queue.",
+    "ja": "学習履歴とAI修正はこの端末に保存されます。写真は基本的に端末内で分析し、同意した新規看板のみ審査待ちに保存します。"
   },
   "aboutBody": {
-    "ko": "한국의 간판을 사진으로 익히는 웹앱입니다. 4개 분야·12개 세부 분류를 SQLite 데이터베이스에서 불러옵니다. 촬영한 사진의 글자를 읽어 등록된 업종·브랜드 표현과 대조합니다.",
-    "en": "A web app for learning Korean signs. The SQLite catalog contains 4 categories and 12 types. Read text from your photo and compare it with registered industry and brand terms.",
-    "ja": "韓国の看板を写真で学ぶウェブアプリです。SQLiteの4分野・12種類を使い、写真の文字を登録済みの業種やブランドと照合します。"
+    "ko": "한국 간판을 촬영해 업종과 여행 정보를 확인하는 Android 앱입니다. 기기 내 OCR, 사용자 수정 기반 개인화 매칭, 간격 반복 복습과 커뮤니티 제보 대기열을 제공합니다.",
+    "en": "An Android app that scans Korean signs for category and travel guidance. It combines on-device OCR, correction-based personalized matching, spaced review and a community report queue.",
+    "ja": "韓国の看板を撮影し、業種と旅行情報を確認するAndroidアプリです。端末内OCR、修正ベースの個人化、間隔反復、投稿待機列を備えています。"
   },
   "cameraTitle": {
     "ko": "지금 눈앞의 간판, 무슨 뜻일까요?",
@@ -306,7 +313,7 @@
   },
   "cameraPrivacy": {
     "ko": "사진은 기기에서만 분석해요. 인식한 글자만 데이터베이스와 대조합니다.",
-    "en": "Your photo is processed on this device. Only text is sent for matching.",
+    "en": "Your photo is processed on this device. Recognized text is matched locally in the app.",
     "ja": "写真は端末内で処理し、読み取った文字だけを照合します。"
   },
   "cropHint": {
@@ -560,6 +567,51 @@
     "ja": "カメラを接続しています…"
   }
 });
+      Object.assign(messages, {
+        community: { ko: "AI 학습", en: "AI learning", ja: "AI学習" },
+        communityTitle: { ko: "함께 똑똑해지는 간판 AI", en: "A sign AI that improves together", ja: "みんなで育てる看板AI" },
+        communityBody: { ko: "수정 피드백은 이 기기의 다음 인식에 반영되고, 동의한 새 간판 제보는 검토 대기열에 저장됩니다.", en: "Corrections improve matching on this device. Consented new-sign reports enter a review queue.", ja: "修正はこの端末の次回認識に反映され、同意した新規看板は審査待ちに保存されます。" },
+        learnedAliases: { ko: "학습한 표현", en: "Learned expressions", ja: "学習した表現" },
+        feedbackCount: { ko: "AI 피드백", en: "AI feedback", ja: "AIフィードバック" },
+        pendingReports: { ko: "검토 대기", en: "Pending review", ja: "審査待ち" },
+        submittedReports: { ko: "제출됨 · 검토 중", en: "Submitted for review", ja: "送信済み・審査中" },
+        publishedUpdates: { ko: "공개 업데이트", en: "Published updates", ja: "公開更新" },
+        syncNow: { ko: "최신 정보 동기화", en: "Sync latest information", ja: "最新情報を同期" },
+        syncing: { ko: "최신 정보를 확인하고 있어요…", en: "Checking for updates…", ja: "最新情報を確認中…" },
+        syncDone: { ko: "최신 공개 정보를 확인했어요.", en: "Published information is up to date.", ja: "公開情報を更新しました。" },
+        syncBundled: { ko: "공개 목록에 연결하지 못해 앱에 포함된 정보를 사용해요.", en: "Could not reach the published catalog. Using the information included in this app.", ja: "公開リストに接続できないため、アプリ内の情報を使用します。" },
+        syncOffline: { ko: "오프라인이라 기기에 저장된 정보를 사용해요.", en: "Offline: using information saved on this device.", ja: "オフラインのため端末の情報を使用します。" },
+        learningHowTitle: { ko: "어떻게 학습하나요?", en: "How does it learn?", ja: "どのように学習する？" },
+        learningHowBody: { ko: "기기 내 OCR 모델이 글자를 읽고 등록 간판과 비교합니다. 사용자가 정답을 확인하거나 수정하면 같은 표현의 다음 후보 순위가 강화됩니다. 낮은 신뢰도 결과는 자동 확정하지 않습니다.", en: "On-device OCR reads text and compares it with registered signs. Confirmations and corrections strengthen future ranking for the same expression. Low-confidence results are never auto-confirmed.", ja: "端末内OCRが文字を読み、登録看板と比較します。確認・修正は次回の候補順位に反映され、低信頼度は自動確定しません。" },
+        spacedTitle: { ko: "맞춤 반복 학습", en: "Adaptive repetition", ja: "適応型反復学習" },
+        spacedBody: { ko: "알겠어요를 누른 카드는 1·3·7·14·30일 간격으로 다시 나타나고, 다시 볼래요를 누르면 즉시 복습 목록으로 돌아옵니다.", en: "Cards marked Got it return after 1, 3, 7, 14, then 30 days. Practice again returns them immediately.", ja: "「分かった」は1・3・7・14・30日後に再登場し、「もう一度」はすぐ復習に戻ります。" },
+        correctAi: { ko: "다른 결과로 수정", en: "Correct this result", ja: "別の結果に修正" },
+        reinforceAi: { ko: "맞아요 · AI 강화", en: "Correct · reinforce AI", ja: "正しい・AIを強化" },
+        reinforced: { ko: "이 기기의 AI가 이 표현을 학습했어요.", en: "The on-device AI learned this expression.", ja: "端末のAIがこの表現を学習しました。" },
+        teachAi: { ko: "새 간판을 AI에게 가르치기", en: "Teach the AI a new sign", ja: "AIに新しい看板を教える" },
+        teachTitle: { ko: "새 간판 제보", en: "Report a new sign", ja: "新しい看板を投稿" },
+        storeName: { ko: "가게·장소 이름", en: "Store or place name", ja: "店・場所の名前" },
+        description: { ko: "어떤 곳인지 설명", en: "What kind of place is it?", ja: "どんな場所ですか？" },
+        photoConsent: { ko: "이 사진과 수정 정보를 AI 개선용 검토 대기열에 저장하는 데 동의해요.", en: "I consent to saving this photo and correction in the AI improvement review queue.", ja: "写真と修正情報をAI改善の審査待ちに保存することに同意します。" },
+        submitReport: { ko: "제보 저장", en: "Save report", ja: "投稿を保存" },
+        reportSaved: { ko: "제보를 기기에 저장했어요. 온라인 제출 서버가 연결되면 검토용으로 동기화됩니다.", en: "Saved on this device. It will sync for review when a submission service is connected.", ja: "端末に保存しました。投稿サービス接続後に審査用として同期されます。" },
+        suggestedCategory: { ko: "AI 추천 카테고리: {name} · {n}%", en: "AI category suggestion: {name} · {n}%", ja: "AI推奨カテゴリー: {name}・{n}%" },
+        queueEmpty: { ko: "아직 제보 대기 항목이 없어요.", en: "No reports are waiting yet.", ja: "審査待ちの投稿はありません。" },
+        privacyLearning: { ko: "사진은 동의 없이 공유되지 않으며 기본 OCR과 개인화 매칭은 기기 안에서 처리됩니다.", en: "Photos are never shared without consent. OCR and personalized matching run on the device by default.", ja: "写真は同意なく共有されません。OCRと個人化マッチングは基本的に端末内で処理されます。" }
+      });
+      if (!mobileMode) {
+        messages.settingsHint = {
+          ko: "학습·복습 기록은 이 브라우저에 저장됩니다. 촬영 사진은 기기에서 문자를 읽는 데만 사용하며 서버에는 인식한 문구만 전송합니다. 사진 출처에서 실제 사진과 학습용 예시의 정보를 확인할 수 있어요.",
+          en: "Your learning history stays in this browser. Photos are processed on your device; only recognized text is sent to the server. Image credits distinguish photos from illustrations.",
+          ja: "学習記録はこのブラウザーに保存されます。写真は端末で処理し、読み取った文字だけをサーバーへ送信します。画像の出典で写真とイメージを確認できます。"
+        };
+        messages.aboutBody = {
+          ko: "한국의 간판을 사진으로 익히는 웹앱입니다. 4개 분야·12개 세부 분류를 SQLite 데이터베이스에서 불러옵니다. 촬영한 사진의 글자를 읽어 등록된 업종·브랜드 표현과 대조합니다.",
+          en: "A web app for learning Korean signs. The SQLite catalog contains 4 categories and 12 types. Read text from your photo and compare it with registered industry and brand terms.",
+          ja: "韓国の看板を写真で学ぶウェブアプリです。SQLiteの4分野・12種類を使い、写真の文字を登録済みの業種やブランドと照合します。"
+        };
+        messages.cameraPrivacy.en = "Your photo is processed on this device. Only text is sent for matching.";
+      }
       var app = document.getElementById("app");
       var state = loadState();
       var screen = !state.languageChosen ? "language-setup" : (state.onboarded ? "home" : "onboarding");
@@ -581,6 +633,8 @@
       var libraryCategory = "all";
       var librarySubcategory = "all";
       var sourcesReturn = "home";
+      var communityBusy = false;
+      var communityNotice = "";
 
       function freshState() {
         return { language: "ko", languageChosen: false, onboarded: false, selectedCategory: "all", selectedSubcategory: "all", progress: {}, activeSession: null, orderSeed: Math.floor(Math.random() * 1000000) };
@@ -663,6 +717,7 @@
       }
 function renderLanguageBar() {
         var links = [["home", "learn"], ["library", "directory"], ["camera", "camera"], ["review", "review"]];
+        if (mobileMode) links.push(["community", "community"]);
         return '<header class="language-bar"><button class="brand" data-action="nav-home" aria-label="Sign by Sign"><span class="brand-mark">ㅅ</span>Sign by Sign</button>' +
           '<nav class="web-links" aria-label="' + escapeHtml(t("mainNavigation")) + '">' + links.map(function (item) {
             return '<button class="' + (screen === item[0] ? 'current' : '') + '" data-action="nav-' + item[0] + '" ' + (screen === item[0] ? 'aria-current="page"' : '') + '>' + t(item[1]) + '</button>';
@@ -680,7 +735,7 @@ function renderLanguageBar() {
       }
 function mainNav(active) {
         return '<nav class="main-nav" aria-label="' + escapeHtml(t("mainNavigation")) + '">' +
-          [["home","home","learn"], ["library","grid","directory"], ["camera","camera","camera"], ["review","bookmark","review"]].map(function (item) {
+          [["home","home","learn"], ["library","grid","directory"], ["camera","camera","camera"], ["review","bookmark","review"]].concat(mobileMode ? [["community","spark","community"]] : []).map(function (item) {
             return '<button class="nav-item ' + (active === item[0] ? 'active' : '') + '" data-action="nav-' + item[0] + '" ' + (active === item[0] ? 'aria-current="page"' : '') + '>' + icon(item[1]) + t(item[2]) + '</button>';
           }).join("") + '</nav>';
       }
@@ -700,8 +755,11 @@ function mainNav(active) {
         }).length;
       }
       function reviewCards() {
-        return cards.filter(function (c) { return state.progress[c.id] && state.progress[c.id].status === "practice"; })
-          .sort(function (a, b) { return (state.progress[b.id].lastChoiceAt || 0) - (state.progress[a.id].lastChoiceAt || 0); });
+        var now = Date.now();
+        return cards.filter(function (c) {
+          var progress = state.progress[c.id];
+          return progress && (progress.status === "practice" || (progress.dueAt && progress.dueAt <= now));
+        }).sort(function (a, b) { return (state.progress[a.id].dueAt || 0) - (state.progress[b.id].dueAt || 0) || (state.progress[b.id].lastChoiceAt || 0) - (state.progress[a.id].lastChoiceAt || 0); });
       }
 function photoMarkup(card, extraClass) {
         var isStudy = extraClass === "study-photo";
@@ -814,6 +872,29 @@ function renderHome() {
             '<button class="secondary-btn" data-action="nav-home" style="margin-top:15px;">' + t("startLearning") + '</button></div>') +
           '</div>' + mainNav("review") + '</div>';
       }
+      function aiStats() {
+        return window.SignNative ? window.SignNative.getLearningStats() : { learnedAliases: 0, feedbackCount: 0, pendingContributions: 0, publishedCards: 0, catalogVersion: catalog.version || 0, lastSyncAt: 0, lastSyncStatus: "offline" };
+      }
+      function mergePublishedCards() {
+        if (!window.SignNative) return;
+        window.SignNative.getPublishedCards().forEach(function (incoming) {
+          if (!validCommunityCard(incoming)) return;
+          var index = cards.findIndex(function (card) { return card.id === incoming.id; });
+          if (index >= 0) cards[index] = incoming; else cards.push(incoming);
+        });
+      }
+      function renderCommunity() {
+        var stats = aiStats();
+        var queue = window.SignNative ? window.SignNative.getContributionQueue() : [];
+        var queueMarkup = queue.length ? queue.slice(0, 5).map(function (item) {
+          return '<li><span><strong lang="ko">' + escapeHtml(item.storeName) + '</strong><small>' + escapeHtml(categoryLabel(item.category)) + ' · ' + new Date(item.createdAt).toLocaleDateString() + '</small></span><b>' + escapeHtml(item.status === "submitted" ? t("submittedReports") : t("pendingReports")) + '</b></li>';
+        }).join("") : '<li class="queue-empty">' + t("queueEmpty") + '</li>';
+        return '<div class="screen"><div class="screen-scroll"><div class="page-wrap ai-learning-page"><div class="page-heading"><div><span class="small-caps">ON-DEVICE AI + COMMUNITY</span><h1>' + t("communityTitle") + '</h1><p>' + t("communityBody") + '</p></div>' + settingsButton() + '</div>' +
+          '<div class="ai-stat-grid"><article><strong>' + stats.learnedAliases + '</strong><span>' + t("learnedAliases") + '</span></article><article><strong>' + stats.feedbackCount + '</strong><span>' + t("feedbackCount") + '</span></article><article><strong>' + stats.pendingContributions + '</strong><span>' + t("pendingReports") + '</span></article><article><strong>v' + (stats.catalogVersion || catalog.version || 1) + '</strong><span>' + t("publishedUpdates") + '</span></article></div>' +
+          '<section class="ai-sync-card"><div><h2>' + t("publishedUpdates") + '</h2><p>' + t("privacyLearning") + '</p></div><button class="primary-btn" data-action="sync-community" ' + (communityBusy ? 'disabled' : '') + '>' + (communityBusy ? t("syncing") : t("syncNow")) + '</button>' + (communityNotice ? '<p class="ai-sync-notice" role="status">' + escapeHtml(communityNotice) + '</p>' : '') + '</section>' +
+          '<div class="ai-explain-grid"><article><span class="feature-tag">' + icon("spark") + ' AI FEEDBACK</span><h2>' + t("learningHowTitle") + '</h2><p>' + t("learningHowBody") + '</p></article><article><span class="feature-tag">' + icon("bookmark") + ' SPACED REVIEW</span><h2>' + t("spacedTitle") + '</h2><p>' + t("spacedBody") + '</p></article></div>' +
+          '<section class="contribution-queue"><div class="section-head"><h2>' + t("pendingReports") + '</h2><span>' + queue.length + '</span></div><ul>' + queueMarkup + '</ul></section></div></div>' + mainNav("community") + '</div>';
+      }
 function renderDetail() {
         var card = findCard(detailId);
         if (!card) { screen = detailReturn; return renderLibrary(); }
@@ -863,6 +944,7 @@ function renderDetail() {
           screen === "detail" ? renderDetail() :
           screen === "library" ? renderLibrary() :
           screen === "camera" ? renderCamera() :
+          screen === "community" ? renderCommunity() :
           screen === "sources" ? renderSources() : renderSettings();
         app.className = screen === "study" ? "is-immersive" : "";
         app.innerHTML = (screen === "language-setup" ? "" : renderLanguageBar()) +
@@ -875,7 +957,7 @@ function renderDetail() {
         attachZoom();
         attachCamera();
         if (document.documentElement) document.documentElement.lang = state.language;
-        document.title = "Sign by Sign — " + t(screen === "camera" ? "camera" : screen === "library" ? "directory" : screen === "sources" ? "sources" : screen === "review" ? "review" : screen === "settings" ? "settings" : "learn");
+        document.title = "Sign by Sign — " + t(screen === "camera" ? "camera" : screen === "library" ? "directory" : screen === "community" ? "community" : screen === "sources" ? "sources" : screen === "review" ? "review" : screen === "settings" ? "settings" : "learn");
       }
       function choose(choice) {
         if (choiceLocked) return;
@@ -902,7 +984,19 @@ function renderDetail() {
         var prior = state.progress[card.id] ? JSON.parse(JSON.stringify(state.progress[card.id])) : null;
         s.undo = { id: card.id, prior: prior, index: s.index, revealed: !!s.revealed, counts: { left: s.counts.left, right: s.counts.right } };
         var oldPractice = prior && prior.practiceChoiceCount || 0;
-        state.progress[card.id] = { status: choice === "left" ? "practice" : "got_it", lastChoiceAt: Date.now(), practiceChoiceCount: oldPractice + (choice === "left" ? 1 : 0) };
+        var repetitions = choice === "right" ? ((prior && prior.repetitions || 0) + 1) : 0;
+        var intervals = [1, 3, 7, 14, 30, 60];
+        var intervalDays = choice === "right" ? intervals[Math.min(repetitions - 1, intervals.length - 1)] : 0;
+        var now = Date.now();
+        state.progress[card.id] = {
+          status: choice === "left" ? "practice" : "got_it",
+          lastChoiceAt: now,
+          practiceChoiceCount: oldPractice + (choice === "left" ? 1 : 0),
+          repetitions: repetitions,
+          intervalDays: intervalDays,
+          dueAt: choice === "left" ? now : now + intervalDays * 86400000,
+          mastery: choice === "left" ? Math.max(0, (prior && prior.mastery || 0) - 1) : Math.min(5, (prior && prior.mastery || 0) + 1)
+        };
         s.counts[choice]++;
         s.index++;
         s.revealed = false;
@@ -1108,14 +1202,14 @@ function renderDetail() {
       }
       function saveForReview(id) {
         var prior = state.progress[id] || {};
-        state.progress[id] = { status: "practice", lastChoiceAt: Date.now(), practiceChoiceCount: prior.practiceChoiceCount || 0 };
+        state.progress[id] = { status: "practice", lastChoiceAt: Date.now(), practiceChoiceCount: prior.practiceChoiceCount || 0, repetitions: 0, intervalDays: 0, dueAt: Date.now(), mastery: prior.mastery || 0 };
         // Any previous session undo would otherwise erase this explicit later save.
         if (state.activeSession) state.activeSession.undo = null;
         save(); render();
       }
 
 
-      var camera = { stream: null, photo: null, demo: false, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, selected: null, notice: "", error: false, progress: 0, opening: false };
+      var camera = { stream: null, photo: null, demo: false, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, selected: null, notice: "", error: false, progress: 0, opening: false, teachOpen: false, teachSaved: false, reinforced: false };
       function stopCamera() {
         camera.request++;
         camera.opening = false;
@@ -1129,7 +1223,7 @@ function renderDetail() {
       }
       function clearPhoto() {
         if (camera.url && !camera.demo) URL.revokeObjectURL(camera.url);
-        camera.photo = null; camera.demo = false; camera.url = ""; camera.crop = null; camera.result = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false;
+        camera.photo = null; camera.demo = false; camera.url = ""; camera.crop = null; camera.result = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false; camera.teachOpen = false; camera.teachSaved = false; camera.reinforced = false;
       }
       function showSampleScan(id) {
         var card = findCard(id) || cards[0];
@@ -1147,6 +1241,7 @@ function renderDetail() {
         render();
       }
       async function openCamera() {
+        if (window.SignNative && window.SignNative.isNative) { await openNativePhoto("camera"); return; }
         stopCamera(); cancelOcr(); clearPhoto();
         screen = "camera";
         if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -1173,9 +1268,21 @@ function renderDetail() {
       }
       function openQuickCamera() {
         languageMenuOpen = false;
+        if (window.SignNative && window.SignNative.isNative) { openNativePhoto("camera"); return; }
         if (!prefersNativeCamera()) { openCamera(); return; }
         stopCamera(); cancelOcr(); clearPhoto(); screen = "camera"; render();
         document.getElementById("captureInput").click();
+      }
+      async function openNativePhoto(source) {
+        stopCamera(); cancelOcr(); clearPhoto(); screen = "camera";
+        camera.opening = true; camera.notice = t("cameraOpening"); render();
+        try {
+          var file = await (source === "photos" ? window.SignNative.choosePhoto() : window.SignNative.takePhoto());
+          camera.opening = false;
+          await usePhoto(file, true);
+        } catch (error) {
+          camera.opening = false; camera.notice = t("cameraDenied"); camera.error = true; render();
+        }
       }
       async function usePhoto(file, autoAnalyze) {
         if (!file) return;
@@ -1230,6 +1337,49 @@ function renderDetail() {
         });
         return (matchedLine || card.korean).slice(0, 80);
       }
+      function teachFormMarkup() {
+        if (!window.SignNative) return "";
+        if (camera.teachSaved) return '<div class="ai-learned-notice" role="status">' + icon("check") + '<span>' + t("reportSaved") + '</span></div>';
+        if (!camera.teachOpen) return '<button class="secondary-btn teach-ai-btn" data-action="teach-sign">' + icon("spark") + t("teachAi") + '</button>';
+        var suggestion = camera.result && camera.result.suggestedCategory;
+        var suggestedId = suggestion && catalog.categories.some(function (category) { return category.id === suggestion.id; }) ? suggestion.id : catalog.categories[0].id;
+        var firstLine = camera.text.split(/[\n\r|,;:]+/).map(function (line) { return line.trim(); }).filter(Boolean)[0] || "";
+        var suggestionMarkup = suggestion ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(suggestion.id), n: suggestion.confidence }) + '</p>' : '';
+        return '<form class="teach-form" id="teachForm"><div class="teach-heading"><span class="feature-tag">' + icon("spark") + ' HUMAN-IN-THE-LOOP</span><h3>' + t("teachTitle") + '</h3></div>' + suggestionMarkup +
+          '<label>' + t("storeName") + '<input id="teachStoreName" maxlength="120" required value="' + escapeHtml(firstLine) + '"></label>' +
+          '<label>' + t("category") + '<select id="teachCategory" required>' + catalog.categories.map(function (category) { return '<option value="' + category.id + '" ' + (category.id === suggestedId ? 'selected' : '') + '>' + escapeHtml(category.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
+          '<label>' + t("description") + '<textarea id="teachDescription" maxlength="800" rows="3"></textarea></label>' +
+          '<label class="consent-row"><input id="teachConsent" type="checkbox" required><span>' + t("photoConsent") + '</span></label>' +
+          '<button class="primary-btn" type="submit">' + t("submitReport") + icon("arrow") + '</button></form>';
+      }
+      function reinforceSelection(id, corrected) {
+        if (!window.SignNative || !camera.text || !id) return;
+        window.SignNative.reinforce({ text: camera.text, cardId: id, corrected: !!corrected });
+        camera.reinforced = true;
+      }
+      async function contributionThumbnail() {
+        if (!camera.url || camera.demo) return "";
+        var image = await loadImage(camera.url);
+        var crop = camera.crop || { x: 0, y: 0, w: 1, h: 1 };
+        var sourceWidth = image.naturalWidth * crop.w, sourceHeight = image.naturalHeight * crop.h;
+        var scale = Math.min(1, 720 / Math.max(sourceWidth, sourceHeight));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(sourceWidth * scale)); canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+        canvas.getContext("2d").drawImage(image, image.naturalWidth * crop.x, image.naturalHeight * crop.y, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL("image/jpeg", .68);
+      }
+      async function saveContribution() {
+        if (!window.SignNative) return;
+        var name = document.getElementById("teachStoreName"), category = document.getElementById("teachCategory"), description = document.getElementById("teachDescription"), consent = document.getElementById("teachConsent");
+        if (!name || !category || !consent || !name.value.trim() || !consent.checked) return;
+        camera.busy = true; camera.notice = t("matching"); render();
+        try {
+          window.SignNative.queueContribution({ ocrText: camera.text, storeName: name.value, category: category.value, description: description ? description.value : "", consent: true, photoData: await contributionThumbnail() });
+          camera.teachSaved = true; camera.teachOpen = false; camera.busy = false; camera.notice = ""; render();
+        } catch (_) {
+          camera.busy = false; camera.notice = t("matchError"); camera.error = true; render();
+        }
+      }
       function renderScanResult() {
         if (camera.selected) {
           var card = findCard(camera.selected);
@@ -1250,16 +1400,18 @@ function renderDetail() {
             '<section><h4>' + t("easyExplanation") + '</h4><p>' + escapeHtml(content.explanation) + '</p></section>' +
             '<section><h4>' + t("expectedExperience") + '</h4><p>' + escapeHtml(experience) + '</p></section>' +
             (phrases ? '<section class="useful-language"><h4>' + t("usefulKorean") + '</h4><ul>' + phrases + '</ul></section>' : '') + '</div>' +
-            '<p class="travel-disclaimer">' + t("generalExperienceNotice") + '</p><div class="travel-result-actions"><button class="secondary-btn" data-action="save-review" data-id="' + card.id + '">' + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button>' + mapLinks(card) + '</div></article>';
+             '<p class="travel-disclaimer">' + t("generalExperienceNotice") + '</p><div class="travel-result-actions"><button class="secondary-btn" data-action="save-review" data-id="' + card.id + '">' + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button>' +
+             (window.SignNative ? '<div class="ai-feedback-actions"><button class="secondary-btn" data-action="reinforce-result" data-id="' + card.id + '" ' + (camera.reinforced ? 'disabled' : '') + '>' + icon("spark") + t(camera.reinforced ? "reinforced" : "reinforceAi") + '</button>' +
+             ((camera.result && camera.result.candidates || []).length > 1 ? '<button class="text-btn" data-action="correct-result">' + t("correctAi") + '</button>' : '') + '</div>' : '') + mapLinks(card) + teachFormMarkup() + '</div></article>';
         }
         if (!camera.result) return "";
-        if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + mapSearchLinks(camera.text) + '</div>';
+        if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + (camera.result.suggestedCategory ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(camera.result.suggestedCategory.id), n: camera.result.suggestedCategory.confidence }) + '</p>' : '') + mapSearchLinks(camera.text) + teachFormMarkup() + '</div>';
         return '<div class="scan-result"><h2>' + t("candidateTitle") + '</h2><p>' + t("candidateBody") + '</p><div class="candidate-list">' +
           camera.result.candidates.map(function (candidate) {
             var c = findCard(candidate.id);
             return '<button data-action="confirm-candidate" data-id="' + c.id + '"><img src="' + escapeHtml(c.image) + '" alt=""><span><strong lang="ko">' + escapeHtml(c.korean) +
               '</strong><small>' + escapeHtml(cardContent(c).meaning) + '</small></span></button>';
-          }).join("") + '</div></div>';
+          }).join("") + '</div>' + teachFormMarkup() + '</div>';
       }
       function renderCamera() {
         var viewport = camera.photo ? '<div class="crop-stage" id="cropStage" style="width:min(100%,' + (58 * camera.ratio).toFixed(2) + 'vh)"><img id="cameraPreview" src="' + camera.url + '" alt="' + escapeHtml(t("camera")) + '" draggable="false"><div class="crop-box" id="cropBox"></div></div>' :
@@ -1326,8 +1478,9 @@ function renderDetail() {
           var context = canvas.getContext("2d");
           context.fillStyle = "#fff"; context.fillRect(0, 0, canvas.width, canvas.height);
           context.drawImage(image, image.naturalWidth * crop.x, image.naturalHeight * crop.y, width, height, 0, 0, canvas.width, canvas.height);
+          var assetRoot = mobileMode ? "." : "";
           var worker = await Tesseract.createWorker("kor+eng", 1, {
-            workerPath: "/vendor/tesseract/worker.min.js", corePath: "/vendor/core", langPath: "/ocr-data", gzip: false, workerBlobURL: false,
+            workerPath: assetRoot + "/vendor/tesseract/worker.min.js", corePath: assetRoot + "/vendor/core", langPath: assetRoot + "/ocr-data", gzip: false, workerBlobURL: false,
             logger: function (event) {
               if (run !== camera.run || screen !== "camera") return;
               camera.progress = Math.round((event.progress || 0) * 100);
@@ -1365,10 +1518,14 @@ function renderDetail() {
         var run = ++camera.run;
         camera.busy = true; camera.notice = t("matching"); camera.error = false; camera.result = null; camera.selected = null; render();
         try {
-          var response = await fetch("/api/match", { method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: camera.text, confidence: camera.confidence, source: camera.edited ? "manual" : "ocr" }) });
-          if (!response.ok) throw new Error("Lookup failed");
-          var result = await response.json();
+          var payload = { text: camera.text, confidence: camera.confidence, source: camera.edited ? "manual" : "ocr" };
+          var result;
+          if (mobileMode && window.SignNative) result = window.SignNative.match(cards, payload);
+          else {
+            var response = await fetch("/api/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error("Lookup failed");
+            result = await response.json();
+          }
           if (run !== camera.run) return;
           camera.result = result; camera.selected = result.matchedId; camera.busy = false; camera.notice = ""; render();
         } catch (_) {
@@ -1380,7 +1537,10 @@ function renderDetail() {
       document.getElementById("uploadInput").addEventListener("change", function (event) { usePhoto(event.target.files[0], false); event.target.value = ""; });
       document.addEventListener("visibilitychange", function () { if (document.hidden) { stopCamera(); if (screen === "camera") render(); } });
       window.addEventListener("pagehide", function () { stopCamera(); cancelOcr(); if (camera.url) URL.revokeObjectURL(camera.url); });
-      app.addEventListener("submit", function (event) { if (event.target.id === "lookupForm") { event.preventDefault(); lookupSign(true); } });
+      app.addEventListener("submit", function (event) {
+        if (event.target.id === "lookupForm") { event.preventDefault(); lookupSign(true); }
+        if (event.target.id === "teachForm") { event.preventDefault(); saveContribution(); }
+      });
       app.addEventListener("input", function (event) {
         if (event.target.id === "recognizedText") { camera.text = event.target.value; camera.edited = true; camera.selected = null; camera.result = null; var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
         if (event.target.id === "librarySearch") { libraryQuery = event.target.value; document.getElementById("catalogGrid").innerHTML = catalogGridMarkup(); document.getElementById("libraryCount").textContent = t("signsCount", { n: filteredLibrary().length }); }
@@ -1390,7 +1550,7 @@ function renderDetail() {
         if (event.target.id === "librarySubtype") { librarySubcategory = event.target.value; render(); }
       });
 
-      app.addEventListener("click", function (e) {
+      app.addEventListener("click", async function (e) {
         if (choiceLocked) return;
         var target = e.target.closest("[data-action]");
         if (!target) return;
@@ -1410,16 +1570,27 @@ function renderDetail() {
 
         else if (action === "nav-library") navigate("library");
         else if (action === "nav-camera") navigate("camera");
+        else if (action === "nav-community") navigate("community");
         else if (action === "quick-camera") openQuickCamera();
         else if (action === "camera" || action === "camera-open") openCamera();
         else if (action === "sample-scan") showSampleScan("mega");
-        else if (action === "native-camera") { stopCamera(); render(); document.getElementById("captureInput").click(); }
-        else if (action === "upload") { stopCamera(); render(); document.getElementById("uploadInput").click(); }
+        else if (action === "native-camera") { if (window.SignNative && window.SignNative.isNative) openNativePhoto("camera"); else { stopCamera(); render(); document.getElementById("captureInput").click(); } }
+        else if (action === "upload") { if (window.SignNative && window.SignNative.isNative) openNativePhoto("photos"); else { stopCamera(); render(); document.getElementById("uploadInput").click(); } }
         else if (action === "capture") capturePhoto();
         else if (action === "ocr") readPhoto();
         else if (action === "cancel-ocr") { cancelOcr(); camera.notice = ""; render(); }
         else if (action === "reset-crop") { camera.crop = null; camera.result = null; camera.selected = null; updateCrop(); var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
-        else if (action === "confirm-candidate") { camera.selected = target.dataset.id; render(); }
+        else if (action === "confirm-candidate") { camera.selected = target.dataset.id; reinforceSelection(camera.selected, true); render(); }
+        else if (action === "reinforce-result") { reinforceSelection(target.dataset.id, false); render(); }
+        else if (action === "correct-result") { camera.selected = null; camera.reinforced = false; render(); }
+        else if (action === "teach-sign") { camera.teachOpen = true; render(); }
+        else if (action === "sync-community") {
+          if (!window.SignNative || communityBusy) return;
+          communityBusy = true; communityNotice = t("syncing"); render();
+          try { var syncStats = await window.SignNative.syncCommunity(); mergePublishedCards(); communityNotice = t(syncStats.lastSyncStatus === "ok" ? "syncDone" : "syncBundled"); }
+          catch (_) { communityNotice = t("syncOffline"); }
+          communityBusy = false; render();
+        }
         else if (action === "save-review") saveForReview(target.dataset.id);
         else if (action === "sources") { sourcesReturn = screen; navigate("sources"); }
         else if (action === "sources-back") navigate(sourcesReturn);
@@ -1494,4 +1665,10 @@ function renderDetail() {
         state.onboarded = true;
         showSampleScan(previewId);
       } else render();
+      if (mobileMode && window.SignNative) {
+        window.SignNative.syncCommunity().then(function () {
+          mergePublishedCards();
+          if (screen === "community") render();
+        }).catch(function () {});
+      }
     })();

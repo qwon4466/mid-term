@@ -6,3 +6,10 @@ ocr-data/
 .env
 .env.*
 !.env.example
+www/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+qa-captures/
+/SignBySign-Android.apk

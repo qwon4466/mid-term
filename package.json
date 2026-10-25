@@ -3,13 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "start": "node server.mjs",
     "db:seed": "node database.mjs --seed",
     "assets:photos": "node scripts/import-photos.mjs",
     "assets:ocr": "node scripts/download-ocr.mjs",
+    "build:mobile": "node scripts/build-mobile.mjs",
+    "cap:add:android": "npm run build:mobile && npx cap add android",
+    "cap:sync": "npm run build:mobile && npx cap sync android",
+    "android:open": "npm run cap:sync && npx cap open android",
+    "android:apk": "npm run cap:sync && node scripts/build-android.mjs",
     "test": "node --test tests/*.test.mjs"
   },
-  "dependencies": { "tesseract.js": "6.0.1" }
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/camera": "^8.2.6",
+    "@capacitor/core": "^8.5.3",
+    "tesseract.js": "6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "esbuild": "^0.28.2"
+  }
 }

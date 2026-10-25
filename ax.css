@@ -448,6 +448,38 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .candidate-list button { padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: white; color: var(--ink); text-align: left; display: flex; gap: 12px; align-items: center; }
 .candidate-list img { width: 58px; height: 58px; object-fit: cover; border-radius: 9px; }
 .candidate-list strong { display: block; font-size: 16px; margin-bottom: 5px; }
+.ai-learning-page { padding-top: 32px; padding-bottom: 42px; }
+.ai-stat-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin: 0 0 22px; }
+.ai-stat-grid article { min-height: 120px; padding: 22px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg,#fff,#f0f7f2); display: grid; align-content: center; gap: 6px; }
+.ai-stat-grid strong { color: var(--teal); font-size: 30px; }
+.ai-stat-grid span { color: var(--muted); font-size: 12px; font-weight: 750; }
+.ai-sync-card { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 18px; padding: 24px; border-radius: 24px; color: white; background: linear-gradient(135deg,#173d35,#256656); }
+.ai-sync-card h2,.ai-explain-grid h2,.contribution-queue h2 { margin: 0 0 8px; }
+.ai-sync-card p { margin: 0; max-width: 680px; color: #d7e9e2; line-height: 1.65; }
+.ai-sync-card .primary-btn { background: #fff; color: var(--teal); white-space: nowrap; }
+.ai-sync-notice { grid-column: 1/-1; padding-top: 4px; font-size: 12px; }
+.ai-explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+.ai-explain-grid article { padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: #fff; }
+.ai-explain-grid p { margin: 0; color: var(--muted); line-height: 1.75; }
+.contribution-queue { margin-top: 30px; }
+.contribution-queue ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.contribution-queue li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 17px; border: 1px solid var(--line); border-radius: 15px; background: #fff; }
+.contribution-queue li span { display: grid; gap: 4px; }
+.contribution-queue li small { color: var(--muted); }
+.contribution-queue li b { color: var(--teal); font-size: 11px; }
+.contribution-queue .queue-empty { display: block; color: var(--muted); text-align: center; padding: 28px; }
+.ai-feedback-actions { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; margin-top: 12px; }
+.ai-feedback-actions .text-btn { width: auto; }
+.ai-learned-notice { display: flex; align-items: flex-start; gap: 9px; margin-top: 14px; padding: 13px 15px; border-radius: 14px; background: var(--teal-soft); color: var(--teal); font-size: 12px; line-height: 1.55; }
+.ai-learned-notice svg { flex: 0 0 auto; width: 18px; }
+.teach-ai-btn { width: 100%; margin-top: 14px; }
+.teach-form { display: grid; gap: 13px; margin-top: 16px; padding: 18px; border-radius: 18px; background: #f3f7f2; border: 1px solid var(--line); }
+.teach-heading h3 { margin: 7px 0 0; }
+.teach-form label { display: grid; gap: 6px; color: var(--ink); font-size: 12px; font-weight: 750; }
+.teach-form input:not([type="checkbox"]),.teach-form select,.teach-form textarea { width: 100%; border: 1px solid #cfdcd3; border-radius: 11px; background: #fff; color: var(--ink); padding: 11px 12px; font: inherit; box-sizing: border-box; }
+.teach-form .consent-row { display: flex; grid-template-columns: none; align-items: flex-start; gap: 9px; color: var(--muted); line-height: 1.55; font-weight: 600; }
+.teach-form .consent-row input { flex: 0 0 auto; margin-top: 3px; }
+.category-suggestion { display: inline-flex; margin: 11px 0 !important; padding: 7px 10px; border-radius: 999px; background: #fff2d9; color: #76510c !important; font-size: 11px !important; font-weight: 800; }
 .candidate-list small { color: var(--muted); }
 .scan-note { display: flex; gap: 9px; font-size: 12px; color: var(--muted); line-height: 1.7; margin-top: 15px; }
 .source-table { display: grid; gap: 16px; padding-bottom: 35px; }
@@ -474,7 +506,7 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
   .header-tools { gap: 4px; }
   .quick-camera-btn { display: inline-grid; width: 36px; height: 36px; }
   .language-toggle { font-size: 12px; min-height: 42px; }
-  .main-nav { display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 9px max(9px, env(safe-area-inset-bottom)); gap: 4px; }
+  .main-nav { display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 7px max(9px, env(safe-area-inset-bottom)); gap: 3px; }
   .nav-item { font-size: 10px; flex-direction: column; gap: 4px; min-height: 52px; }
   .page-wrap { padding: 0 18px; }
   .home-content { padding-top: 16px; padding-bottom: 20px; }
@@ -546,6 +578,14 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
   .travel-info-grid { grid-template-columns: 1fr; }
   .travel-result-hero { padding: 19px; }
   .travel-sections { padding-left: 17px; padding-right: 17px; }
+  .ai-learning-page { padding-top: 17px; }
+  .ai-stat-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ai-stat-grid article { min-height: 92px; padding: 15px; }
+  .ai-sync-card { grid-template-columns: 1fr; padding: 19px; }
+  .ai-sync-card .primary-btn { width: 100%; }
+  .ai-explain-grid { grid-template-columns: 1fr; }
+  .ai-explain-grid article { padding: 19px; }
+  .ai-feedback-actions { grid-template-columns: 1fr; }
   .source-row { grid-template-columns: 80px 1fr; gap: 14px; padding: 15px; }
   .source-row img { width: 80px; height: 85px; }
 }

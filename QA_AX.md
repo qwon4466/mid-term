@@ -1,5 +1,7 @@
 # AX 검증 기록
 
+Android APK와 에뮬레이터 검증 현황은 [README_ANDROID.md](README_ANDROID.md)의 설치·확인 항목을 참고하세요. 아래 기록은 기존 웹 버전의 검증입니다.
+
 검증일: 2026-10-09. Windows, Node.js 24.19.0, Codex 내장 Chromium 브라우저.
 
 ## 자동 검증

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sign by Sign</string>
+    <string name="title_activity_main">Sign by Sign</string>
+    <string name="package_name">com.signbysign.app</string>
+    <string name="custom_url_scheme">com.signbysign.app</string>
+</resources>

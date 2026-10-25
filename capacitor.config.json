@@ -1,0 +1,9 @@
+{
+  "appId": "com.signbysign.app",
+  "appName": "Sign by Sign",
+  "webDir": "www",
+  "backgroundColor": "#f7f8f3",
+  "android": {
+    "allowMixedContent": false
+  }
+}

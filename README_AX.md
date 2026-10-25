@@ -1,5 +1,7 @@
 # Sign by Sign · AX 웹 버전
 
+Android 설치형 앱과 서버 없이 실행하는 APK 빌드 방법은 [README_ANDROID.md](README_ANDROID.md)에 있습니다. 이 문서는 기존 웹 실행 방법을 설명합니다.
+
 기존 `prototype.html`을 보존하고, 별도 `prototype-ax.html`에 전체 화면 웹페이지와 실제 SQLite 연동을 추가했습니다. 휴대폰 모형 안에 넣은 화면이 아니라 브라우저 영역 전체를 사용하는 반응형 페이지입니다. HTML/CSS/JavaScript와 서버·데이터 파일을 분리했으므로 HTML 파일을 더블클릭하는 방식이 아닌 아래 서버로 실행합니다.
 
 ## 실행
