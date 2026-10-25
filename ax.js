@@ -210,9 +210,9 @@
     "ja": "どの看板から学ぶ？"
   },
   "categorySubtitle": {
-    "ko": "4개 분야 · 12개 세부 분류",
-    "en": "4 categories · 12 types",
-    "ja": "4分野・12種類"
+    "ko": "4개 분야 · 16개 세부 분류",
+    "en": "4 categories · 16 types",
+    "ja": "4分野・16種類"
   },
   "featureTag": {
     "ko": "보고 · 이해하고 · 기억하기",
@@ -295,9 +295,9 @@
     "ja": "学習用イメージ"
   },
   "prototypeNote": {
-    "ko": "간판 12개 · 사진과 학습용 예시",
-    "en": "12 signs · photos and educational illustrations",
-    "ja": "看板12枚・写真と学習用イメージ"
+    "ko": "간판 22개 · 실제 사진과 AI 학습용 예시",
+    "en": "22 signs · real photos and AI learning examples",
+    "ja": "看板22枚・実写真とAI学習用イメージ"
   },
   "settingsHint": {
     "ko": "학습 기록과 AI 수정 내용은 이 기기에 저장됩니다. 사진은 기본적으로 기기 안에서 분석하며, 동의한 새 간판 제보만 검토 대기열에 저장합니다.",
@@ -645,11 +645,32 @@
         storeName: { ko: "가게·장소 이름", en: "Store or place name", ja: "店・場所の名前" },
         description: { ko: "어떤 곳인지 설명", en: "What kind of place is it?", ja: "どんな場所ですか？" },
         photoConsent: { ko: "이 사진과 수정 정보를 AI 개선용 검토 대기열에 저장하는 데 동의해요.", en: "I consent to saving this photo and correction in the AI improvement review queue.", ja: "写真と修正情報をAI改善の審査待ちに保存することに同意します。" },
+        infoConsent: { ko: "가게 이름·분류·설명을 공개 학습 후보로 공유하는 데 동의해요. (필수)", en: "I agree to share the place name, category, and description as a public learning candidate. (Required)", ja: "店名・分類・説明を公開学習候補として共有することに同意します。（必須）" },
+        photoUploadConsent: { ko: "촬영 사진을 비공개 검토용으로 서버에 업로드하는 데 별도로 동의해요. (선택)", en: "I separately consent to uploading the photo for private review. (Optional)", ja: "撮影写真を非公開の審査用としてサーバーへ送信することに同意します。（任意）" },
+        photoUploadNote: { ko: "사진 동의를 하지 않아도 제보할 수 있어요. 사진은 공개 카드에 표시되지 않습니다.", en: "You can report without the photo. Review photos are never shown on public cards.", ja: "写真なしでも投稿できます。審査写真は公開カードに表示されません。" },
         submitReport: { ko: "제보 저장", en: "Save report", ja: "投稿を保存" },
         reportSaved: { ko: "제보를 공유 서버에 전송했어요. 다른 사용자의 확인을 기다립니다.", en: "Sent to the shared service. It is waiting for another user's verification.", ja: "共有サーバーへ送信しました。ほかの利用者の確認待ちです。" },
         suggestedCategory: { ko: "AI 추천 카테고리: {name} · {n}%", en: "AI category suggestion: {name} · {n}%", ja: "AI推奨カテゴリー: {name}・{n}%" },
         queueEmpty: { ko: "아직 제보 대기 항목이 없어요.", en: "No reports are waiting yet.", ja: "審査待ちの投稿はありません。" },
         privacyLearning: { ko: "동의한 제보 정보만 공유 서버로 전송됩니다. 촬영 사진은 검토용으로만 보관하고 공개 카드에는 분류 대표 이미지를 사용합니다.", en: "Only consented reports are sent to the shared service. Photos remain review-only; public cards use category representative images.", ja: "同意した投稿だけを共有サーバーへ送信します。写真は審査用に保管し、公開カードにはカテゴリー代表画像を使います。" }
+      });
+      Object.assign(messages, {
+        support: { ko: "신고·문의", en: "Report or contact", ja: "通報・お問い合わせ" },
+        supportTitle: { ko: "신고 및 문의", en: "Report and contact", ja: "通報・お問い合わせ" },
+        supportBody: { ko: "잘못된 간판 정보, 사진 출처 문제, 앱 사용 문의를 운영자에게 보낼 수 있어요.", en: "Send incorrect sign information, image-source concerns, or app questions to the operator.", ja: "誤った看板情報、画像出典の問題、アプリ利用の質問を運営者へ送れます。" },
+        supportType: { ko: "유형", en: "Type", ja: "種類" },
+        reportType: { ko: "정보 신고", en: "Report information", ja: "情報を通報" },
+        inquiryType: { ko: "사용 문의", en: "General inquiry", ja: "利用に関するお問い合わせ" },
+        replyEmail: { ko: "답변 받을 이메일 (선택)", en: "Reply email (optional)", ja: "返信用メール（任意）" },
+        supportMessage: { ko: "내용", en: "Message", ja: "内容" },
+        supportPlaceholder: { ko: "어떤 정보가 잘못됐는지 또는 무엇이 궁금한지 자세히 적어주세요.", en: "Describe what is incorrect or what you would like to ask.", ja: "誤っている情報や質問内容を詳しく書いてください。" },
+        supportPrivacy: { ko: "이메일은 답변을 위해서만 저장되며 공개되지 않습니다. 신고 내용에는 민감한 개인정보를 적지 마세요.", en: "Email is stored only for a reply and is never public. Do not include sensitive personal information.", ja: "メールは返信のためだけに保存され、公開されません。機微な個人情報は記載しないでください。" },
+        sendSupport: { ko: "보내기", en: "Send", ja: "送信" },
+        supportSent: { ko: "접수됐어요. 확인 후 필요한 조치를 진행할게요.", en: "Received. The operator will review it and take any needed action.", ja: "受け付けました。確認後、必要な対応を行います。" },
+        supportError: { ko: "전송하지 못했어요. 서버 주소와 연결 상태를 확인해주세요.", en: "Could not send it. Check the server address and connection.", ja: "送信できませんでした。サーバー設定と接続を確認してください。" }
+        ,serverAddress: { ko: "공유 서버 주소", en: "Shared server address", ja: "共有サーバーアドレス" }
+        ,serverAddressHint: { ko: "같은 Wi-Fi 테스트 서버 또는 운영 HTTPS 주소를 입력하세요. 저장하면 앱을 다시 불러옵니다.", en: "Enter a same-Wi-Fi test server or production HTTPS URL. Saving reloads the app.", ja: "同じWi-Fiのテストサーバーまたは本番HTTPS URLを入力してください。保存後に再読み込みします。" }
+        ,saveServer: { ko: "서버 주소 저장", en: "Save server address", ja: "サーバーを保存" }
       });
       if (!mobileMode) {
         messages.settingsHint = {
@@ -687,6 +708,9 @@
       var sourcesReturn = "home";
       var communityBusy = false;
       var communityNotice = "";
+      var supportReturn = "home";
+      var supportBusy = false;
+      var supportNotice = "";
 
       function freshState() {
         return { language: "ko", languageChosen: false, onboarded: false, selectedCategory: "all", selectedSubcategory: "all", progress: {}, activeSession: null, orderSeed: Math.floor(Math.random() * 1000000) };
@@ -747,6 +771,7 @@
           train: '<rect x="5" y="3" width="14" height="15" rx="4"/><path d="M5 10h14M9 18l-3 4M15 18l3 4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/>',
           food: '<path d="M5 3v7a3 3 0 0 0 6 0V3M8 3v19M19 3c-3 3-3 7 0 9v10M19 3v9"/>',
           spark: '<path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z"/><path d="m19 17 .5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5z"/>'
+          ,flag: '<path d="M5 21V4m0 0c5-3 9 3 14 0v10c-5 3-9-3-14 0"/>'
         };
         return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || paths.spark) + '</svg>';
       }
@@ -773,7 +798,7 @@ function renderLanguageBar() {
         return '<header class="language-bar"><button class="brand" data-action="nav-home" aria-label="Sign by Sign"><span class="brand-mark">ㅅ</span>Sign by Sign</button>' +
           '<nav class="web-links" aria-label="' + escapeHtml(t("mainNavigation")) + '">' + links.map(function (item) {
             return '<button class="' + (screen === item[0] ? 'current' : '') + '" data-action="nav-' + item[0] + '" ' + (screen === item[0] ? 'aria-current="page"' : '') + '>' + t(item[1]) + '</button>';
-          }).join("") + '</nav><div class="header-tools"><a class="apk-header-link" href="./SignBySign-Android.apk" download aria-label="' + escapeHtml(t("downloadAndroid")) + '">' + t("downloadAndroid") + '</a><button class="icon-btn quick-camera-btn" data-action="quick-camera" aria-label="' + escapeHtml(t("camera")) + '" title="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button>' +
+          }).join("") + '</nav><div class="header-tools"><a class="apk-header-link" href="./SignBySign-Android.apk" download aria-label="' + escapeHtml(t("downloadAndroid")) + '">' + t("downloadAndroid") + '</a><button class="icon-btn quick-camera-btn" data-action="quick-camera" aria-label="' + escapeHtml(t("camera")) + '" title="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button><button class="icon-btn support-header-btn" data-action="support" aria-label="' + escapeHtml(t("support")) + '" title="' + escapeHtml(t("support")) + '">' + icon("flag") + '</button>' +
           '<button class="language-toggle" data-action="language-menu" aria-label="' + escapeHtml(t("language") + ": " + currentLanguageName()) + '">' + icon("globe") +
           '<span>' + currentLanguageName() + '</span><span aria-hidden="true">⌄</span></button></div></header>';
       }
@@ -818,7 +843,7 @@ function photoMarkup(card, extraClass) {
         var src = isStudy ? (card.portrait || card.image) : card.image;
         return '<button class="photo-btn ' + (extraClass || "") + '" style="--photo-url:url(\'' + escapeHtml(src) + '\')" data-action="zoom" data-id="' + escapeHtml(card.id) + '" aria-label="' + escapeHtml(t("enlargePhoto")) + '">' +
           '<img class="' + (src !== card.image || card.imageKind === "illustration" ? "is-portrait" : "") + '" src="' + escapeHtml(src) + '" alt="' + escapeHtml(t("photoAlt")) + '" draggable="false">' +
-          '<span class="photo-label">' + t(card.imageKind === "photo" ? "realPhoto" : "illustrativePhoto") + '</span><span class="photo-expand">' + icon("expand") + '</span>' +
+          '<span class="photo-label">' + t(card.imageKind === "photo" ? "realPhoto" : "illustrativePhoto") + '</span>' + (card.images && card.images.length > 1 ? '<span class="photo-count">' + t("photosCount", { n: card.images.length }) + '</span>' : '') + '<span class="photo-expand">' + icon("expand") + '</span>' +
           '<span class="image-error"><strong>' + t("imageUnavailable") + '</strong><small>' + t("imageStillReveal") + '</small></span></button>';
       }
       function answerMarkup(card) {
@@ -959,13 +984,14 @@ function renderHome() {
 function renderDetail() {
         var card = findCard(detailId);
         if (!card) { screen = detailReturn; return renderLibrary(); }
-        var context = card.images.find(function (i) { return i.role === "context"; });
+        var extraImages = card.images.filter(function (i) { return i.role === "context"; });
+        var gallery = extraImages.length ? '<section class="sign-gallery"><h2>' + t("photosCount", { n: card.images.length }) + '</h2><div class="sign-gallery-grid">' + extraImages.map(function (image) { return '<figure><img loading="lazy" src="' + escapeHtml(image.path) + '" alt="' + escapeHtml(card.korean) + '"><figcaption>' + t(image.kind === "photo" ? "realPhoto" : "illustrativePhoto") + sourceCredit(image) + '</figcaption></figure>'; }).join("") + '</div></section>' : "";
         return '<div class="screen"><header class="screen-header"><button class="icon-btn" data-action="detail-back" aria-label="' + escapeHtml(t("back")) + '">' + icon("back") +
           '</button><strong class="header-title">' + t("signDetails") + '</strong><span></span></header><div class="screen-scroll"><div class="page-wrap"><div class="detail-layout"><div>' +
           photoMarkup(card, "") + '</div><div><div class="small-caps">' + escapeHtml(categoryLabel(card.category)) + ' / ' + escapeHtml(subcategoryLabel(card.subcategory)) + '</div>' +
           (detailRevealed ? answerMarkup(card) + '<div class="detail-actions"><button class="primary-btn" data-action="save-review" data-id="' + card.id + '">' + icon("bookmark") + t(state.progress[card.id] && state.progress[card.id].status === "practice" ? "savedReview" : "addReview") + '</button></div>' :
             '<div class="question">' + t("question") + '</div><button class="meaning-btn" data-action="detail-reveal">' + t("showMeaning") + '</button>') +
-          (detailRevealed ? sourceMarkup(card) + mapLinks(card) + (context ? '<h2 class="context-title">' + t("contextPhoto") + '</h2><img class="context-image" src="' + escapeHtml(context.path) + '" alt="' + escapeHtml(t("contextPhoto")) + '">' + sourceCredit(context) : "") : "") +
+          (detailRevealed ? sourceMarkup(card) + mapLinks(card) + gallery : "") +
           '</div></div></div></div></div>';
       }
       function renderSettings() {
@@ -976,8 +1002,31 @@ function renderDetail() {
           '<button class="settings-row" data-action="reset"><span>' + t("resetProgress") + '</span>' + icon("arrow") + '</button>' +
           '<button class="settings-row" data-action="sources"><span>' + t("sources") + '</span>' + icon("arrow") + '</button>' +
           '<button class="settings-row" data-action="about"><span>' + t("about") + '</span>' + icon("arrow") + '</button></div>' +
+          (mobileMode ? '<section class="server-config"><h2>' + t("serverAddress") + '</h2><p>' + t("serverAddressHint") + '</p><div><input id="serverBaseUrl" type="url" value="' + escapeHtml((window.SignBySignConfig && window.SignBySignConfig.apiBaseUrl) || "") + '" placeholder="https://example.com"><button class="secondary-btn" data-action="save-server">' + t("saveServer") + '</button></div></section>' : '') +
           '<p class="settings-hint">' + t("settingsHint") + '</p>' +
           '</div></div>';
+      }
+      function renderSupport() {
+        return '<div class="screen"><header class="screen-header"><button class="icon-btn" data-action="support-back" aria-label="' + escapeHtml(t("back")) + '">' + icon("back") + '</button><strong class="header-title">' + t("supportTitle") + '</strong><span style="width:42px"></span></header><div class="screen-scroll"><div class="page-wrap support-page"><div class="page-heading"><div><span class="small-caps">HELP & SAFETY</span><h1>' + t("supportTitle") + '</h1><p>' + t("supportBody") + '</p></div></div>' +
+          '<form id="supportForm" class="support-form"><label>' + t("supportType") + '<select id="supportType"><option value="report">' + t("reportType") + '</option><option value="inquiry">' + t("inquiryType") + '</option></select></label><label>' + t("replyEmail") + '<input id="supportEmail" type="email" maxlength="160" autocomplete="email"></label><label>' + t("supportMessage") + '<textarea id="supportMessage" minlength="5" maxlength="2000" rows="7" required placeholder="' + escapeHtml(t("supportPlaceholder")) + '"></textarea></label><p class="support-privacy">' + t("supportPrivacy") + '</p><button class="primary-btn" type="submit" ' + (supportBusy ? 'disabled' : '') + '>' + (supportBusy ? t("syncing") : t("sendSupport")) + icon("arrow") + '</button>' + (supportNotice ? '<p class="support-notice" role="status">' + escapeHtml(supportNotice) + '</p>' : '') + '</form></div></div></div>';
+      }
+      async function submitSupportForm() {
+        if (supportBusy) return;
+        var type = document.getElementById("supportType"), email = document.getElementById("supportEmail"), message = document.getElementById("supportMessage");
+        if (!type || !message || message.value.trim().length < 5) return;
+        var payload = { type: type.value, email: email ? email.value.trim() : "", message: message.value.trim(), context: { returnScreen: supportReturn, language: state.language, appMode: window.SIGN_BY_SIGN_MODE || "web" } };
+        supportBusy = true; supportNotice = ""; render();
+        try {
+          if (window.SignNative && window.SignNative.submitSupport) await window.SignNative.submitSupport(payload);
+          else {
+            var endpoint = window.SignBySignConfig && window.SignBySignConfig.supportUrl;
+            if (!endpoint) throw new Error("Support service is not connected");
+            var response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign(payload, { clientId: "web-" + Date.now() + "-anonymous" })) });
+            if (!response.ok) throw new Error("Support request failed");
+          }
+          supportNotice = t("supportSent");
+        } catch (_) { supportNotice = t("supportError"); }
+        supportBusy = false; render();
       }
       function renderModal() {
         if (!modal) return "";
@@ -1006,7 +1055,7 @@ function renderDetail() {
           screen === "library" ? renderLibrary() :
           screen === "camera" ? renderCamera() :
           screen === "community" ? renderCommunity() :
-          screen === "sources" ? renderSources() : renderSettings();
+          screen === "sources" ? renderSources() : screen === "support" ? renderSupport() : renderSettings();
         app.className = screen === "study" ? "is-immersive" : "";
         app.innerHTML = (screen === "language-setup" ? "" : renderLanguageBar()) +
           '<div class="app-content" id="pageContent" tabindex="-1">' + body + '</div>' + renderModal() + renderLanguageMenu() + renderZoom();
@@ -1404,13 +1453,16 @@ function renderDetail() {
         if (!camera.teachOpen) return '<button class="secondary-btn teach-ai-btn" data-action="teach-sign">' + icon("spark") + t("teachAi") + '</button>';
         var suggestion = camera.result && camera.result.suggestedCategory;
         var suggestedId = suggestion && catalog.categories.some(function (category) { return category.id === suggestion.id; }) ? suggestion.id : catalog.categories[0].id;
+        var suggestedSubcategories = subcategories.filter(function (item) { return item.category === suggestedId; });
         var firstLine = camera.text.split(/[\n\r|,;:]+/).map(function (line) { return line.trim(); }).filter(Boolean)[0] || "";
         var suggestionMarkup = suggestion ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(suggestion.id), n: suggestion.confidence }) + '</p>' : '';
         return '<form class="teach-form" id="teachForm"><div class="teach-heading"><span class="feature-tag">' + icon("spark") + ' HUMAN-IN-THE-LOOP</span><h3>' + t("teachTitle") + '</h3></div>' + suggestionMarkup +
           '<label>' + t("storeName") + '<input id="teachStoreName" maxlength="120" required value="' + escapeHtml(firstLine) + '"></label>' +
           '<label>' + t("category") + '<select id="teachCategory" required>' + catalog.categories.map(function (category) { return '<option value="' + category.id + '" ' + (category.id === suggestedId ? 'selected' : '') + '>' + escapeHtml(category.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
+          '<label>' + t("subcategory") + '<select id="teachSubcategory" required>' + suggestedSubcategories.map(function (item) { return '<option value="' + item.id + '">' + escapeHtml(item.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
           '<label>' + t("description") + '<textarea id="teachDescription" maxlength="800" rows="3"></textarea></label>' +
-          '<label class="consent-row"><input id="teachConsent" type="checkbox" required><span>' + t("photoConsent") + '</span></label>' +
+          '<label class="consent-row"><input id="teachConsent" type="checkbox" required><span>' + t("infoConsent") + '</span></label>' +
+          '<label class="consent-row optional-consent"><input id="teachPhotoConsent" type="checkbox"><span>' + t("photoUploadConsent") + '</span></label><p class="consent-note">' + t("photoUploadNote") + '</p>' +
           '<button class="primary-btn" type="submit">' + t("submitReport") + icon("arrow") + '</button></form>';
       }
       function reinforceSelection(id, corrected) {
@@ -1431,11 +1483,12 @@ function renderDetail() {
       }
       async function saveContribution() {
         if (!window.SignNative) return;
-        var name = document.getElementById("teachStoreName"), category = document.getElementById("teachCategory"), description = document.getElementById("teachDescription"), consent = document.getElementById("teachConsent");
-        if (!name || !category || !consent || !name.value.trim() || !consent.checked) return;
+        var name = document.getElementById("teachStoreName"), category = document.getElementById("teachCategory"), subcategory = document.getElementById("teachSubcategory"), description = document.getElementById("teachDescription"), consent = document.getElementById("teachConsent"), photoConsent = document.getElementById("teachPhotoConsent");
+        if (!name || !category || !subcategory || !consent || !name.value.trim() || !consent.checked) return;
         camera.busy = true; camera.notice = t("matching"); render();
         try {
-          window.SignNative.queueContribution({ ocrText: camera.text, storeName: name.value, category: category.value, description: description ? description.value : "", consent: true, photoData: await contributionThumbnail() });
+          var sharePhoto = !!(photoConsent && photoConsent.checked);
+          window.SignNative.queueContribution({ ocrText: camera.text, storeName: name.value, category: category.value, subcategory: subcategory.value, description: description ? description.value : "", consent: true, photoConsent: sharePhoto, photoData: sharePhoto ? await contributionThumbnail() : "" });
           await window.SignNative.syncCommunity();
           mergePublishedCards();
           camera.teachSaved = true; camera.teachOpen = false; camera.busy = false; camera.notice = ""; render();
@@ -1682,6 +1735,7 @@ function renderDetail() {
       app.addEventListener("submit", function (event) {
         if (event.target.id === "lookupForm") { event.preventDefault(); lookupSign(true); }
         if (event.target.id === "teachForm") { event.preventDefault(); saveContribution(); }
+        if (event.target.id === "supportForm") { event.preventDefault(); submitSupportForm(); }
       });
       app.addEventListener("input", function (event) {
         if (event.target.id === "recognizedText") { camera.text = event.target.value; camera.edited = true; camera.selected = null; camera.result = null; camera.discovery = null; var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
@@ -1690,6 +1744,10 @@ function renderDetail() {
       app.addEventListener("change", function (event) {
         if (event.target.id === "libraryCategory") { libraryCategory = event.target.value; librarySubcategory = "all"; render(); }
         if (event.target.id === "librarySubtype") { librarySubcategory = event.target.value; render(); }
+        if (event.target.id === "teachCategory") {
+          var select = document.getElementById("teachSubcategory");
+          if (select) select.innerHTML = subcategories.filter(function (item) { return item.category === event.target.value; }).map(function (item) { return '<option value="' + item.id + '">' + escapeHtml(item.label[state.language]) + '</option>'; }).join("");
+        }
       });
 
       app.addEventListener("click", async function (e) {
@@ -1706,6 +1764,13 @@ function renderDetail() {
         else if (action === "nav-home") navigate("home");
         else if (action === "nav-review") navigate("review");
         else if (action === "settings") { settingsReturn = screen; navigate("settings"); }
+        else if (action === "support") { supportReturn = screen; supportNotice = ""; navigate("support"); }
+        else if (action === "support-back") { navigate(supportReturn); }
+        else if (action === "save-server") {
+          var serverInput = document.getElementById("serverBaseUrl");
+          var serverValue = serverInput ? serverInput.value.trim().replace(/\/$/, "") : "";
+          if (/^https?:\/\/[^\s]+$/.test(serverValue)) { localStorage.setItem("sign-by-sign-api-base", serverValue); location.reload(); }
+        }
         else if (action === "settings-back") { screen = settingsReturn; render(); }
         else if (action === "category") { state.selectedCategory = target.dataset.category; state.selectedSubcategory = "all"; save(); render(); }
         else if (action === "category-all") { state.selectedCategory = "all"; state.selectedSubcategory = "all"; save(); render(); }

@@ -52,7 +52,7 @@ function validPublishedCard(card) {
     Array.isArray(card.aliases) && card.aliases.length > 0 && card.aliases.every(alias => typeof alias === 'string' && alias.length <= 120) &&
     safeImagePath(card.image) && safeImagePath(card.portrait) &&
     Array.isArray(card.images) && card.images.some(image => image.role === 'primary') &&
-    card.images.every(image => image && safeImagePath(image.path) && safeImagePath(image.portrait) && typeof image.kind === 'string') &&
+    card.images.every(image => image && safeImagePath(image.path) && (!image.portrait || safeImagePath(image.portrait)) && typeof image.kind === 'string') &&
     translation && ['ko', 'en', 'ja'].every(language => translation[language] && typeof translation[language].meaning === 'string' && typeof translation[language].explanation === 'string' && Array.isArray(translation[language].keywords)) &&
     guide && guide.experience && ['ko', 'en', 'ja'].every(language => typeof guide.experience[language] === 'string') &&
     Array.isArray(guide.phrases) && guide.phrases.every(phrase => phrase && typeof phrase.korean === 'string' && typeof phrase.romanization === 'string' && phrase.meaning && ['ko', 'en', 'ja'].every(language => typeof phrase.meaning[language] === 'string')));
@@ -139,12 +139,14 @@ function queueContribution(input) {
     ocrText: String(input.ocrText || '').trim().slice(0, 500),
     storeName: String(input.storeName || '').trim().slice(0, 120),
     category: String(input.category || '').slice(0, 80),
+    subcategory: String(input.subcategory || '').slice(0, 80),
     description: String(input.description || '').trim().slice(0, 800),
-    photoData: String(input.photoData || '').slice(0, 600000),
+    photoData: input.photoConsent === true ? String(input.photoData || '').slice(0, 600000) : '',
+    photoConsent: input.photoConsent === true,
     consent: input.consent === true,
     clientId: communityClientId()
   };
-  if (!item.storeName || !item.category || !item.consent) throw new Error('Name, category and consent are required.');
+  if (!item.storeName || !item.category || !item.subcategory || !item.consent) throw new Error('Name, category, subcategory and consent are required.');
   state.queue = [item, ...(state.queue || [])].slice(0, 20);
   writeJson(COMMUNITY_KEY, state);
   return item;
@@ -229,6 +231,18 @@ async function voteCommunity({ id, vote }) {
   return result;
 }
 
+async function submitSupport(input) {
+  const config = globalThis.SignBySignConfig || {};
+  if (!config.supportUrl) throw new Error('Support service is not connected.');
+  const response = await fetch(config.supportUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...input, clientId: communityClientId() })
+  });
+  if (!response.ok) throw new Error(`Support request ${response.status}`);
+  return response.json();
+}
+
 globalThis.SignNative = {
   isNative: Capacitor.isNativePlatform(),
   platform: Capacitor.getPlatform(),
@@ -244,6 +258,7 @@ globalThis.SignNative = {
   queueContribution,
   syncCommunity,
   voteCommunity,
+  submitSupport,
   getLearningStats,
   getPublishedCards,
   getContributionQueue,

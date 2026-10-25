@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 3,
   "categories": [
     {
       "id": "medical",
@@ -9,9 +9,9 @@
         "ja": "医療"
       },
       "description": {
-        "ko": "약국 · 병원",
-        "en": "Pharmacies · hospitals",
-        "ja": "薬局・病院"
+        "ko": "약국 · 병원 · 진료과",
+        "en": "Pharmacies · hospitals · specialties",
+        "ja": "薬局・病院・診療科"
       },
       "cover": "pharmacy",
       "icon": "medical"
@@ -80,6 +80,26 @@
         "en": "Hospital",
         "ja": "病院"
       }
+    },
+    {
+      "id": "internal_medicine",
+      "category": "medical",
+      "label": { "ko": "내과", "en": "Internal medicine", "ja": "内科" }
+    },
+    {
+      "id": "pediatrics",
+      "category": "medical",
+      "label": { "ko": "소아청소년과", "en": "Pediatrics", "ja": "小児科" }
+    },
+    {
+      "id": "dental",
+      "category": "medical",
+      "label": { "ko": "치과", "en": "Dentistry", "ja": "歯科" }
+    },
+    {
+      "id": "ophthalmology",
+      "category": "medical",
+      "label": { "ko": "안과", "en": "Ophthalmology", "ja": "眼科" }
     },
     {
       "id": "mega",
@@ -187,6 +207,36 @@
       "id": "lotteria",
       "name": "롯데리아",
       "homepage": "https://www.lotteeatz.com/"
+    },
+    {
+      "id": "mcdonalds",
+      "name": "맥도날드",
+      "homepage": "https://www.mcdonalds.co.kr/"
+    },
+    {
+      "id": "subway_restaurant",
+      "name": "서브웨이",
+      "homepage": "https://www.subway.co.kr/"
+    },
+    {
+      "id": "baskin_robbins",
+      "name": "배스킨라빈스",
+      "homepage": "https://www.baskinrobbins.co.kr/"
+    },
+    {
+      "id": "yoajung",
+      "name": "요아정",
+      "homepage": "https://yoajung.co.kr/"
+    },
+    {
+      "id": "kfc",
+      "name": "KFC",
+      "homepage": "https://www.kfckorea.com/"
+    },
+    {
+      "id": "burger_king",
+      "name": "버거킹",
+      "homepage": "https://www.burgerking.co.kr/"
     }
   ],
   "signs": [
@@ -232,8 +282,11 @@
           ]
         }
       },
-      "image": "assets/pharmacy.png",
-      "portrait": "assets/pharmacy-portrait.png"
+      "images": [
+        { "path": "assets/pharmacy.png", "portrait": "assets/pharmacy-portrait.png" },
+        { "generated": "pharmacy-2" },
+        { "generated": "pharmacy-3" }
+      ]
     },
     {
       "id": "hospital",
@@ -280,7 +333,67 @@
           ]
         }
       },
-      "photo": "hospital"
+      "images": [
+        { "photo": "hospital" },
+        { "generated": "hospital-2" },
+        { "generated": "hospital-3" }
+      ]
+    },
+    {
+      "id": "internal-medicine",
+      "subcategory": "internal_medicine",
+      "korean": "내과",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": ["내과", "내과의원", "INTERNAL MEDICINE"],
+      "translations": {
+        "ko": { "meaning": "내과 진료를 받는 곳", "explanation": "감기, 소화기·호흡기 증상과 만성질환 등 성인 내과 진료를 주로 보는 의료기관이에요.", "keywords": [["내과", "성인 질환을 진료하는 곳"]] },
+        "en": { "meaning": "Internal medicine clinic", "explanation": "A clinic for adult medical care such as respiratory or digestive symptoms and chronic conditions.", "keywords": [["내과", "Internal medicine clinic"]] },
+        "ja": { "meaning": "内科クリニック", "explanation": "風邪、消化器・呼吸器症状、慢性疾患など成人の内科診療を行う医療機関です。", "keywords": [["내과", "内科クリニック"]] }
+      },
+      "images": [{ "generated": "internal-medicine-1" }, { "generated": "internal-medicine-2" }, { "generated": "internal-medicine-3" }]
+    },
+    {
+      "id": "pediatrics",
+      "subcategory": "pediatrics",
+      "korean": "소아청소년과",
+      "difficulty": 2,
+      "brand": null,
+      "aliases": ["소아청소년과", "소아과", "PEDIATRICS"],
+      "translations": {
+        "ko": { "meaning": "어린이와 청소년을 진료하는 곳", "explanation": "영유아부터 청소년까지 성장, 예방접종, 일반 질환을 진료하는 의료기관이에요.", "keywords": [["소아청소년과", "어린이·청소년 진료"]] },
+        "en": { "meaning": "Pediatrics clinic", "explanation": "A clinic for children and teenagers, including growth checks, vaccinations, and common illnesses.", "keywords": [["소아청소년과", "Pediatrics clinic"]] },
+        "ja": { "meaning": "小児科", "explanation": "乳幼児から青少年まで、成長、予防接種、一般的な病気を診療する医療機関です。", "keywords": [["소아청소년과", "小児科"]] }
+      },
+      "images": [{ "generated": "pediatrics-1" }, { "generated": "pediatrics-2" }, { "generated": "pediatrics-3" }]
+    },
+    {
+      "id": "dental",
+      "subcategory": "dental",
+      "korean": "치과",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": ["치과", "치과의원", "DENTAL", "DENTAL CLINIC"],
+      "translations": {
+        "ko": { "meaning": "치아와 잇몸을 진료하는 곳", "explanation": "충치, 잇몸, 스케일링 등 구강과 치아 관련 진료를 받는 의료기관이에요.", "keywords": [["치과", "치아·잇몸 진료"]] },
+        "en": { "meaning": "Dental clinic", "explanation": "A clinic for teeth and gums, including cavities, cleaning, and other oral care.", "keywords": [["치과", "Dental clinic"]] },
+        "ja": { "meaning": "歯科", "explanation": "虫歯、歯ぐき、クリーニングなど口腔と歯の診療を受ける医療機関です。", "keywords": [["치과", "歯科"]] }
+      },
+      "images": [{ "generated": "dental-1" }, { "generated": "dental-2" }, { "generated": "dental-3" }]
+    },
+    {
+      "id": "ophthalmology",
+      "subcategory": "ophthalmology",
+      "korean": "안과",
+      "difficulty": 1,
+      "brand": null,
+      "aliases": ["안과", "안과의원", "EYE CLINIC", "OPHTHALMOLOGY"],
+      "translations": {
+        "ko": { "meaning": "눈을 진료하는 곳", "explanation": "시력검사와 눈의 통증·질환 등 안과 진료를 받는 의료기관이에요.", "keywords": [["안과", "눈 진료"]] },
+        "en": { "meaning": "Eye clinic", "explanation": "A clinic for eye exams, eye pain, vision problems, and ophthalmic conditions.", "keywords": [["안과", "Eye clinic"]] },
+        "ja": { "meaning": "眼科", "explanation": "視力検査、目の痛みや病気など眼科診療を受ける医療機関です。", "keywords": [["안과", "眼科"]] }
+      },
+      "images": [{ "generated": "ophthalmology-1" }, { "generated": "ophthalmology-2" }, { "generated": "ophthalmology-3" }]
     },
     {
       "id": "mega",
@@ -467,8 +580,11 @@
           ]
         }
       },
-      "image": "assets/subway.png",
-      "portrait": "assets/subway-portrait.png"
+      "images": [
+        { "path": "assets/subway.png", "portrait": "assets/subway-portrait.png" },
+        { "photo": "subway-entrance" },
+        { "photo": "subway-station-sign" }
+      ]
     },
     {
       "id": "bus",
@@ -513,8 +629,11 @@
           ]
         }
       },
-      "generated": "bus-sign",
-      "context": "bus"
+      "images": [
+        { "generated": "bus-sign" },
+        { "photo": "bus" },
+        { "photo": "bus-smart-shelter" }
+      ]
     },
     {
       "id": "taxi",
@@ -560,8 +679,11 @@
           ]
         }
       },
-      "generated": "taxi-sign",
-      "context": "taxi"
+      "images": [
+        { "generated": "taxi-sign" },
+        { "photo": "taxi" },
+        { "photo": "taxi-incheon" }
+      ]
     },
     {
       "id": "korean",
@@ -748,6 +870,90 @@
         }
       },
       "generated": "lotteria"
+    },
+    {
+      "id": "mcdonalds",
+      "subcategory": "franchise",
+      "korean": "맥도날드",
+      "difficulty": 1,
+      "brand": "mcdonalds",
+      "aliases": ["맥도날드", "MCDONALDS", "MCDONALD'S", "McDonald's"],
+      "translations": {
+        "ko": { "meaning": "맥도날드 패스트푸드점", "explanation": "맥도날드 브랜드의 햄버거·사이드·음료를 주문하는 음식점이에요.", "keywords": [["맥도날드", "패스트푸드점"]] },
+        "en": { "meaning": "McDonald's restaurant", "explanation": "A McDonald's fast-food restaurant for burgers, sides, and drinks.", "keywords": [["맥도날드", "McDonald's"]] },
+        "ja": { "meaning": "マクドナルド", "explanation": "バーガー、サイド、飲み物を注文するマクドナルドの店舗です。", "keywords": [["맥도날드", "マクドナルド"]] }
+      },
+      "images": [{ "photo": "mcdonalds" }]
+    },
+    {
+      "id": "subway-restaurant",
+      "subcategory": "franchise",
+      "korean": "서브웨이",
+      "difficulty": 2,
+      "brand": "subway_restaurant",
+      "aliases": ["서브웨이", "SUBWAY"],
+      "translations": {
+        "ko": { "meaning": "서브웨이 샌드위치점", "explanation": "빵과 재료, 소스를 골라 샌드위치를 주문하는 프랜차이즈 음식점이에요.", "keywords": [["서브웨이", "샌드위치점"]] },
+        "en": { "meaning": "Subway sandwich shop", "explanation": "A sandwich chain where you choose bread, fillings, vegetables, and sauces.", "keywords": [["서브웨이", "Subway restaurant"]] },
+        "ja": { "meaning": "サブウェイ", "explanation": "パン、具材、野菜、ソースを選んで注文するサンドイッチチェーンです。", "keywords": [["서브웨이", "サブウェイ"]] }
+      },
+      "images": [{ "photo": "subway-restaurant" }]
+    },
+    {
+      "id": "baskin-robbins",
+      "subcategory": "franchise",
+      "korean": "배스킨라빈스",
+      "difficulty": 2,
+      "brand": "baskin_robbins",
+      "aliases": ["배스킨라빈스", "베스킨라빈스", "BASKIN ROBBINS", "BASKIN-ROBBINS"],
+      "translations": {
+        "ko": { "meaning": "배스킨라빈스 아이스크림점", "explanation": "여러 맛의 아이스크림과 아이스크림 케이크를 고르는 프랜차이즈 매장이에요.", "keywords": [["배스킨라빈스", "아이스크림점"]] },
+        "en": { "meaning": "Baskin-Robbins ice cream shop", "explanation": "An ice-cream chain offering many flavors and ice-cream cakes.", "keywords": [["배스킨라빈스", "Baskin-Robbins"]] },
+        "ja": { "meaning": "バスキン・ロビンス", "explanation": "多くの味のアイスクリームやアイスケーキを選べるチェーン店です。", "keywords": [["배스킨라빈스", "アイスクリーム店"]] }
+      },
+      "images": [{ "photo": "baskin-robbins" }]
+    },
+    {
+      "id": "yoajung",
+      "subcategory": "franchise",
+      "korean": "요아정",
+      "difficulty": 3,
+      "brand": "yoajung",
+      "aliases": ["요아정", "요거트아이스크림의정석", "YOGURT ICE CREAM"],
+      "translations": {
+        "ko": { "meaning": "요거트 아이스크림 디저트점", "explanation": "요거트 아이스크림에 과일과 토핑을 조합해 주문하는 디저트 프랜차이즈예요.", "keywords": [["요아정", "요거트 아이스크림점"]] },
+        "en": { "meaning": "Yogurt ice-cream dessert shop", "explanation": "A dessert chain for yogurt ice cream with fruit and other toppings.", "keywords": [["요아정", "Yogurt ice cream"]] },
+        "ja": { "meaning": "ヨーグルトアイス店", "explanation": "ヨーグルトアイスに果物やトッピングを組み合わせて注文するデザートチェーンです。", "keywords": [["요아정", "ヨーグルトアイス"]] }
+      },
+      "images": [{ "generated": "yoajung" }]
+    },
+    {
+      "id": "kfc",
+      "subcategory": "franchise",
+      "korean": "KFC",
+      "difficulty": 1,
+      "brand": "kfc",
+      "aliases": ["KFC", "케이에프씨", "켄터키후라이드치킨"],
+      "translations": {
+        "ko": { "meaning": "KFC 치킨 패스트푸드점", "explanation": "치킨, 버거, 사이드 메뉴를 주문하는 KFC 프랜차이즈 음식점이에요.", "keywords": [["KFC", "치킨 패스트푸드점"]] },
+        "en": { "meaning": "KFC restaurant", "explanation": "A KFC fast-food restaurant serving fried chicken, burgers, and sides.", "keywords": [["KFC", "Fried chicken restaurant"]] },
+        "ja": { "meaning": "KFC", "explanation": "フライドチキン、バーガー、サイドを注文するKFCの店舗です。", "keywords": [["KFC", "フライドチキン店"]] }
+      },
+      "images": [{ "photo": "kfc" }]
+    },
+    {
+      "id": "burger-king",
+      "subcategory": "franchise",
+      "korean": "버거킹",
+      "difficulty": 2,
+      "brand": "burger_king",
+      "aliases": ["버거킹", "BURGER KING"],
+      "translations": {
+        "ko": { "meaning": "버거킹 패스트푸드점", "explanation": "햄버거, 사이드, 음료를 주문하는 버거킹 프랜차이즈 음식점이에요.", "keywords": [["버거킹", "패스트푸드점"]] },
+        "en": { "meaning": "Burger King restaurant", "explanation": "A Burger King fast-food restaurant serving burgers, sides, and drinks.", "keywords": [["버거킹", "Burger King"]] },
+        "ja": { "meaning": "バーガーキング", "explanation": "バーガー、サイド、飲み物を注文するバーガーキングの店舗です。", "keywords": [["버거킹", "バーガーキング"]] }
+      },
+      "images": [{ "photo": "burger-king" }]
     }
   ]
 }

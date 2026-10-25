@@ -29,12 +29,14 @@ function publicRow(db, row) {
     storeName: row.store_name,
     ocrText: row.ocr_text,
     category: row.category_id,
+    subcategory: row.subcategory_id,
     description: row.description,
     status: row.status,
     confirmations: votes.confirm,
     rejections: votes.reject,
     requiredConfirmations: PUBLIC_THRESHOLD,
-    hasPhoto: Boolean(row.photo_data)
+    hasPhoto: Boolean(row.photo_data),
+    photoConsent: Boolean(row.photo_consent)
   };
 }
 
@@ -42,20 +44,35 @@ export function createContribution(db, input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('Invalid contribution.');
   const storeName = clean(input.storeName, 120);
   const category = clean(input.category, 80);
+  const subcategory = clean(input.subcategory, 80);
   const description = clean(input.description, 800);
   const ocrText = clean(input.ocrText, 500);
   const consent = input.consent === true;
   const submitter = clientHash(input.clientId);
-  if (!storeName || !category || !consent || !db.prepare('SELECT 1 ok FROM categories WHERE id = ?').get(category)) throw new TypeError('Name, category and consent are required.');
-  let photoData = clean(input.photoData, 600000);
+  if (!storeName || !category || !subcategory || !consent || !db.prepare('SELECT 1 ok FROM subcategories WHERE id = ? AND category_id = ?').get(subcategory, category)) throw new TypeError('Name, category, subcategory and consent are required.');
+  const photoConsent = input.photoConsent === true;
+  let photoData = photoConsent ? clean(input.photoData, 600000) : '';
   if (photoData && !/^data:image\/jpeg;base64,[a-zA-Z0-9+/=]+$/.test(photoData)) photoData = '';
-  const id = randomUUID();
+  const normalizedName = normalize(storeName);
   const now = Date.now();
+  let id;
   db.exec('BEGIN IMMEDIATE');
   try {
+    const existing = db.prepare("SELECT * FROM community_contributions WHERE normalized_name = ? AND subcategory_id = ? AND status IN ('pending','published') ORDER BY created_at LIMIT 1").get(normalizedName, subcategory);
+    if (existing) {
+      db.prepare(`INSERT INTO community_votes (contribution_id,voter_hash,value,created_at) VALUES (?,?,?,?)
+        ON CONFLICT(contribution_id,voter_hash) DO UPDATE SET value='confirm', created_at=excluded.created_at`).run(existing.id, submitter, 'confirm', now);
+      const counts = voteCounts(db, existing.id);
+      const status = counts.confirm >= PUBLIC_THRESHOLD && counts.confirm > counts.reject ? 'published' : existing.status;
+      db.prepare("UPDATE community_contributions SET updated_at=?, status=?, published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END, photo_data=CASE WHEN photo_data='' THEN ? ELSE photo_data END, photo_consent=CASE WHEN photo_data='' AND ?<>'' THEN 1 ELSE photo_consent END WHERE id=?")
+        .run(now, status, status, now, photoData, photoData, existing.id);
+      db.exec('COMMIT');
+      return { ...publicRow(db, db.prepare('SELECT * FROM community_contributions WHERE id = ?').get(existing.id)), deduplicated: true };
+    }
+    id = randomUUID();
     db.prepare(`INSERT INTO community_contributions
-      (id,created_at,updated_at,store_name,normalized_name,ocr_text,category_id,description,photo_data,submitter_hash,status,published_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,NULL)`).run(id, now, now, storeName, normalize(storeName), ocrText, category, description, photoData, submitter, 'pending');
+      (id,created_at,updated_at,store_name,normalized_name,ocr_text,category_id,subcategory_id,description,photo_data,photo_consent,submitter_hash,status,published_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NULL)`).run(id, now, now, storeName, normalizedName, ocrText, category, subcategory, description, photoData, photoConsent ? 1 : 0, submitter, 'pending');
     db.prepare('INSERT INTO community_votes (contribution_id,voter_hash,value,created_at) VALUES (?,?,?,?)').run(id, submitter, 'confirm', now);
     db.exec('COMMIT');
   } catch (error) {
@@ -89,7 +106,7 @@ export function voteContribution(db, id, input) {
 
 function communityCard(db, row) {
   const catalog = getCatalog(db);
-  const template = catalog.cards.find(card => card.category === row.category_id && card.imageKind === 'illustration') || catalog.cards.find(card => card.category === row.category_id) || catalog.cards[0];
+  const template = catalog.cards.find(card => card.subcategory === row.subcategory_id && card.imageKind === 'illustration') || catalog.cards.find(card => card.subcategory === row.subcategory_id) || catalog.cards.find(card => card.category === row.category_id) || catalog.cards[0];
   const category = catalog.categories.find(item => item.id === row.category_id);
   const label = category?.label || { ko: '가게·장소', en: 'store or place', ja: '店舗・場所' };
   const baseImage = template.images.find(image => image.role === 'primary') || template.images[0];
@@ -108,7 +125,7 @@ function communityCard(db, row) {
     changes: 'A category representative image is shown; the submitted review photo is not published.'
   };
   return {
-    id: `community-${row.id}`, category: row.category_id, subcategory: template.subcategory, brand: null, brandName: row.store_name,
+    id: `community-${row.id}`, category: row.category_id, subcategory: row.subcategory_id || template.subcategory, brand: null, brandName: row.store_name,
     korean: row.store_name, difficulty: 1, image: imagePath, portrait: portraitPath, imageKind: 'illustration', images: [image], translations,
     travelGuide: template.travelGuide, aliases, ...translations.en,
     community: { contributionId: row.id, confirmations: voteCounts(db, row.id).confirm, publishedAt: row.published_at }
@@ -134,7 +151,7 @@ export function matchCommunity(db, input) {
   const rows = db.prepare("SELECT * FROM community_contributions WHERE status = 'published'").all();
   const matches = rows.filter(row => pieces.includes(row.normalized_name) || row.ocr_text.split(/[\n\r|,;:]+/).map(normalize).some(alias => pieces.includes(alias)));
   if (!matches.length) return null;
-  const candidates = matches.map(row => ({ id: `community-${row.id}`, alias: row.store_name, kind: 'exact', score: 1, category: row.category_id, scope: 'community' }));
+  const candidates = matches.map(row => ({ id: `community-${row.id}`, alias: row.store_name, kind: 'exact', score: 1, category: row.category_id, subcategory: row.subcategory_id, scope: 'community' }));
   if (candidates.length > 1) return { status: 'ambiguous', matchedId: null, candidates, scope: null, requiresConfirmation: true, community: true };
   const reliable = input.source === 'manual' || Number(input.confidence) >= 75;
   return { status: reliable ? 'matched' : 'candidates', matchedId: reliable ? candidates[0].id : null, candidates, scope: reliable ? 'community' : null, requiresConfirmation: !reliable, community: true };

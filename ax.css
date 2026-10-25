@@ -506,6 +506,28 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .teach-form input:not([type="checkbox"]),.teach-form select,.teach-form textarea { width: 100%; border: 1px solid #cfdcd3; border-radius: 11px; background: #fff; color: var(--ink); padding: 11px 12px; font: inherit; box-sizing: border-box; }
 .teach-form .consent-row { display: flex; grid-template-columns: none; align-items: flex-start; gap: 9px; color: var(--muted); line-height: 1.55; font-weight: 600; }
 .teach-form .consent-row input { flex: 0 0 auto; margin-top: 3px; }
+.teach-form .optional-consent { padding-top: 4px; border-top: 1px solid var(--line); }
+.consent-note { margin: -6px 0 2px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.photo-count { position: absolute; right: 48px; bottom: 9px; z-index: 1; border-radius: 999px; background: rgba(255,255,255,.9); color: var(--ink); font-size: 10px; padding: 5px 9px; font-weight: 800; }
+.sign-gallery { margin-top: 24px; }
+.sign-gallery h2 { margin: 0 0 11px; font-size: 17px; }
+.sign-gallery-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.sign-gallery figure { margin: 0; padding: 8px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.sign-gallery img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 11px; display: block; }
+.sign-gallery figcaption { display: grid; gap: 5px; padding: 8px 3px 2px; color: var(--muted); font-size: 10px; }
+.support-page { max-width: 820px; }
+.support-form { display: grid; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: #fff; box-shadow: 0 14px 40px rgba(29,69,61,.07); }
+.support-form label { display: grid; gap: 7px; color: var(--ink); font-size: 13px; font-weight: 800; }
+.support-form input,.support-form select,.support-form textarea { width: 100%; box-sizing: border-box; border: 1px solid #cad9d0; border-radius: 12px; background: #fbfcfa; color: var(--ink); padding: 12px 14px; font: inherit; }
+.support-form textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+.support-privacy,.support-notice { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.support-notice { color: var(--green); font-weight: 800; }
+.server-config { margin: 22px auto 0; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.server-config h2 { margin: 0 0 7px; font-size: 18px; }
+.server-config p { margin: 0 0 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.server-config > div { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+.server-config input { min-width: 0; border: 1px solid #cad9d0; border-radius: 11px; padding: 10px 12px; font: inherit; }
+.server-config .secondary-btn { width: auto; padding: 0 16px; }
 .category-suggestion { display: inline-flex; margin: 11px 0 !important; padding: 7px 10px; border-radius: 999px; background: #fff2d9; color: #76510c !important; font-size: 11px !important; font-weight: 800; }
 .candidate-list small { color: var(--muted); }
 .scan-note { display: flex; gap: 9px; font-size: 12px; color: var(--muted); line-height: 1.7; margin-top: 15px; }
@@ -532,6 +554,7 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
   .web-links { display: none; }
   .header-tools { gap: 4px; }
   .quick-camera-btn { display: inline-grid; width: 36px; height: 36px; }
+  .support-header-btn { width: 36px; height: 36px; }
   .apk-header-link { width: 38px; padding: 0; font-size: 0; }
   .apk-header-link:after { content: "APK"; font-size: 9px; }
   .language-toggle { font-size: 12px; min-height: 42px; }
@@ -623,6 +646,10 @@ button svg { width: 20px; height: 20px; flex-shrink: 0; }
   .ai-feedback-actions { grid-template-columns: 1fr; }
   .source-row { grid-template-columns: 80px 1fr; gap: 14px; padding: 15px; }
   .source-row img { width: 80px; height: 85px; }
+  .sign-gallery-grid { grid-template-columns: 1fr; }
+  .support-form { padding: 18px; border-radius: 18px; }
+  .server-config > div { grid-template-columns: 1fr; }
+  .server-config .secondary-btn { width: 100%; }
 }
 @media (max-height: 650px) {
   .study-page .study-category { top: calc(120px + env(safe-area-inset-top)); }

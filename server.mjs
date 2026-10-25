@@ -6,6 +6,7 @@ import { openDatabase, getCatalog, root } from './database.mjs';
 import { matchText } from './recognition.mjs';
 import { discoverSign, providerStatus } from './discovery.mjs';
 import { createContribution, getCommunityCatalog, matchCommunity, voteContribution } from './community.mjs';
+import { createSupportRequest } from './support.mjs';
 const db = openDatabase(process.env.SIGN_DATABASE || path.join(root, 'data/signs.sqlite'));
 const discoveryCache = new Map();
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.apk': 'application/vnd.android.package-archive', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.wasm': 'application/wasm', '.traineddata': 'application/octet-stream' };
@@ -68,7 +69,7 @@ const handler = async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/health') {
       const community = getCommunityCatalog(db);
-      return json(res, 200, { ok: true, database: 'SQLite', signs: db.prepare('SELECT count(*) n FROM signs').get().n, discovery: providerStatus(), community: { pending: community.pending.length, published: community.cards.length, version: community.version } });
+      return json(res, 200, { ok: true, database: 'SQLite', signs: db.prepare('SELECT count(*) n FROM signs').get().n, discovery: providerStatus(), community: { pending: community.pending.length, published: community.cards.length, version: community.version }, support: { open: db.prepare("SELECT count(*) n FROM support_requests WHERE status='open'").get().n } });
     }
     if (req.method === 'POST' && url.pathname === '/api/community/contributions') {
       if (!acceptWriteOrigin(req, res)) return;
@@ -104,6 +105,12 @@ const handler = async (req, res) => {
       discoveryCache.set(key, { value, expiresAt: Date.now() + 60 * 60 * 1000 });
       if (discoveryCache.size > 200) discoveryCache.delete(discoveryCache.keys().next().value);
       return json(res, 200, value);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/support') {
+      if (!acceptWriteOrigin(req, res)) return;
+      const input = await readJson(req, res, 8192); if (input === undefined) return;
+      try { return json(res, 201, createSupportRequest(db, input)); }
+      catch (error) { if (error instanceof TypeError) return json(res, 400, { error: error.message }); throw error; }
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { error: 'Method not allowed.' });
     let filename; try { filename = staticPath(decodeURIComponent(url.pathname)); } catch { return json(res, 400, { error: 'Invalid path.' }); }

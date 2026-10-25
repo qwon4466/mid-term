@@ -50,7 +50,7 @@ test('mobile bundle contains its offline catalog and OCR resources', t => {
   const web = path.join(root, 'www');
   if (!existsSync(path.join(web, 'data/catalog.json'))) return t.skip('Run npm run build:mobile to inspect generated assets');
   const catalog = JSON.parse(readFileSync(path.join(web, 'data/catalog.json'), 'utf8'));
-  assert.equal(catalog.cards.length, 12);
+  assert.equal(catalog.cards.length, 22);
   for (const file of ['native-bridge.js', 'ax.js', 'ax.css', 'vendor/tesseract/tesseract.min.js', 'vendor/tesseract/worker.min.js', 'ocr-data/kor.traineddata', 'ocr-data/eng.traineddata']) {
     assert.ok(existsSync(path.join(web, file)), file);
   }

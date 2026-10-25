@@ -9,11 +9,16 @@
   <link rel="stylesheet" href="./ax.css">
   <script>
     window.SIGN_BY_SIGN_MODE = "mobile";
+    const packagedApiBase = "__SIGN_PUBLIC_API_BASE__";
+    const fallbackApiBase = "http://203.241.129.163:4173";
+    const apiBase = (localStorage.getItem("sign-by-sign-api-base") || (packagedApiBase.startsWith("http") ? packagedApiBase : fallbackApiBase)).replace(/\/$/, "");
     window.SignBySignConfig = {
-      communityCatalogUrl: "https://raw.githubusercontent.com/qwon4466/mid-term/main/data/community-catalog.json",
-      communitySubmitUrl: "",
-      communityVoteUrl: "",
-      discoveryUrl: ""
+      apiBaseUrl: apiBase,
+      communityCatalogUrl: apiBase + "/api/community",
+      communitySubmitUrl: apiBase + "/api/community/contributions",
+      communityVoteUrl: apiBase + "/api/community/contributions",
+      discoveryUrl: apiBase + "/api/discover",
+      supportUrl: apiBase + "/api/support"
     };
   </script>
   <script src="./native-bridge.js" defer></script>

@@ -9,12 +9,12 @@ const db = openDatabase(':memory:');
 after(() => db.close());
 const match = (text, extra = {}) => matchText(db, { text, source: 'manual', confidence: 0, ...extra });
 
-test('catalog has four categories and twelve complete subcategories', () => {
+test('catalog has four categories and sixteen complete subcategories', () => {
   const catalog = getCatalog(db);
   assert.deepEqual(catalog.categories.map(c => c.id), ['medical', 'cafe', 'transport', 'restaurant']);
-  assert.equal(catalog.subcategories.length, 12);
-  assert.equal(catalog.cards.length, 12);
-  assert.equal(new Set(catalog.cards.map(c => c.subcategory)).size, 12);
+  assert.equal(catalog.subcategories.length, 16);
+  assert.equal(catalog.cards.length, 22);
+  assert.equal(new Set(catalog.cards.map(c => c.subcategory)).size, 16);
   for (const c of catalog.cards) {
     for (const lang of ['ko', 'en', 'ja']) {
       assert.ok(c.translations[lang].meaning);
@@ -32,15 +32,18 @@ test('catalog has four categories and twelve complete subcategories', () => {
     for (const image of c.images) {
       assert.ok(existsSync(path.join(root, image.path)), image.path);
       if (image.kind === 'photo') {
-        assert.match(image.license, /^CC BY/);
+        assert.match(image.license, /^(CC BY|Public domain)/);
         assert.match(image.sourceUrl, /^https:/);
-        assert.match(image.licenseUrl, /^https:/);
+        if (image.license !== 'Public domain') assert.match(image.licenseUrl, /^https:/);
         assert.ok(image.author);
       }
     }
     assert.ok(existsSync(path.join(root, c.portrait)), c.portrait);
   }
-  assert.equal(catalog.cards.flatMap(c => c.images).length, 14);
+  assert.equal(catalog.cards.flatMap(c => c.images).length, 40);
+  for (const id of ['pharmacy', 'hospital', 'internal-medicine', 'pediatrics', 'dental', 'ophthalmology', 'subway', 'bus', 'taxi']) {
+    assert.equal(catalog.cards.find(card => card.id === id).images.length, 3, id);
+  }
   assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
 });
 
@@ -61,7 +64,9 @@ for (const [text, id, scope] of [
   ['커피숍', 'cafe', 'type'], ['지하철', 'subway', 'type'],
   ['버스정류장', 'bus', 'type'], ['택시 승강장', 'taxi', 'type'],
   ['한식', 'korean', 'type'], ['중식', 'chinese', 'type'],
-  ['일식', 'japanese', 'type'], ['롯데리아', 'lotteria', 'brand']
+  ['일식', 'japanese', 'type'], ['롯데리아', 'lotteria', 'brand'],
+  ['맥도날드', 'mcdonalds', 'brand'], ['서브웨이', 'subway-restaurant', 'brand'],
+  ['배스킨라빈스', 'baskin-robbins', 'brand'], ['KFC', 'kfc', 'brand'], ['버거킹', 'burger-king', 'brand']
 ]) test(`exact phrase: ${text}`, () => {
   const result = match(text);
   assert.equal(result.status, 'matched');
@@ -105,5 +110,5 @@ test('unknown text, other businesses and SQL text never become exact matches', (
     assert.equal(result.status, 'no_match');
     assert.equal(result.matchedId, null);
   }
-  assert.equal(getCatalog(db).cards.length, 12);
+  assert.equal(getCatalog(db).cards.length, 22);
 });

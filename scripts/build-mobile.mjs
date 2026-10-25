@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,6 +41,11 @@ for (const [source, destination] of [
   cpSync(path.isAbsolute(source) ? source : path.join(root, source), path.join(output, destination), { recursive: true });
 }
 
+const publicApiBase = String(process.env.SIGN_PUBLIC_API_BASE || '').replace(/\/$/, '');
+if (publicApiBase && !/^https?:\/\/[a-zA-Z0-9.-]+(?::\d+)?(?:\/[^\s"']*)?$/.test(publicApiBase)) throw new Error('SIGN_PUBLIC_API_BASE must be an http(s) URL.');
+const mobileIndex = path.join(output, 'index.html');
+writeFileSync(mobileIndex, readFileSync(mobileIndex, 'utf8').replace('__SIGN_PUBLIC_API_BASE__', publicApiBase), 'utf8');
+
 const db = openDatabase();
 try {
   writeFileSync(path.join(output, 'data/catalog.json'), `${JSON.stringify(getCatalog(db))}\n`, 'utf8');
@@ -51,6 +56,18 @@ try {
 await build({
   entryPoints: [path.join(root, 'mobile/native-bridge.mjs')],
   outfile: path.join(output, 'native-bridge.js'),
+  bundle: true,
+  format: 'iife',
+  platform: 'browser',
+  target: ['chrome60'],
+  minify: true,
+  sourcemap: false,
+  legalComments: 'none'
+});
+
+await build({
+  entryPoints: [path.join(root, 'mobile/native-bridge.mjs')],
+  outfile: path.join(root, 'web-bridge.js'),
   bundle: true,
   format: 'iife',
   platform: 'browser',

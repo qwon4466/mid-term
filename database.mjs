@@ -22,6 +22,7 @@ export function openDatabase(filename = path.join(root, 'data/signs.sqlite')) {
     CREATE INDEX IF NOT EXISTS aliases_lookup ON aliases(normalized);
     CREATE TABLE IF NOT EXISTS images (id TEXT PRIMARY KEY, sign_id TEXT NOT NULL REFERENCES signs(id), path TEXT NOT NULL, portrait_path TEXT, role TEXT NOT NULL CHECK(role IN ('primary','context')), kind TEXT NOT NULL CHECK(kind IN ('photo','illustration')), metadata TEXT NOT NULL);
     CREATE UNIQUE INDEX IF NOT EXISTS one_primary_image ON images(sign_id) WHERE role = 'primary';
+    CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS community_contributions (
       id TEXT PRIMARY KEY,
       created_at INTEGER NOT NULL,
@@ -44,10 +45,25 @@ export function openDatabase(filename = path.join(root, 'data/signs.sqlite')) {
       value TEXT NOT NULL CHECK(value IN ('confirm','reject')),
       created_at INTEGER NOT NULL,
       PRIMARY KEY(contribution_id, voter_hash)
-    );`);
+    );
+    CREATE TABLE IF NOT EXISTS support_requests (
+      id TEXT PRIMARY KEY,
+      created_at INTEGER NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('report','inquiry')),
+      email TEXT NOT NULL DEFAULT '',
+      message TEXT NOT NULL,
+      context TEXT NOT NULL DEFAULT '',
+      client_hash TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','closed'))
+    );
+    CREATE INDEX IF NOT EXISTS support_created ON support_requests(created_at DESC);`);
+  const contributionColumns = new Set(db.prepare('PRAGMA table_info(community_contributions)').all().map(column => column.name));
+  if (!contributionColumns.has('subcategory_id')) db.exec('ALTER TABLE community_contributions ADD COLUMN subcategory_id TEXT');
+  if (!contributionColumns.has('photo_consent')) db.exec('ALTER TABLE community_contributions ADD COLUMN photo_consent INTEGER NOT NULL DEFAULT 0');
   const signCount = db.prepare('SELECT count(*) n FROM signs').get().n;
-  const guideCount = db.prepare('SELECT count(*) n FROM travel_guides').get().n;
-  if (!signCount || guideCount !== signCount) seedDatabase(db);
+  const seedVersion = String(JSON.parse(readFileSync(path.join(root, 'data/seed.json'), 'utf8')).version || 1);
+  const installedVersion = db.prepare("SELECT value FROM app_meta WHERE key = 'seed_version'").get()?.value;
+  if (!signCount || installedVersion !== seedVersion) seedDatabase(db);
   return db;
 }
 
@@ -74,16 +90,16 @@ export function seedDatabase(db) {
       for (const [language, tr] of Object.entries(s.translations)) put('translations', { sign_id: s.id, language, meaning: tr.meaning, explanation: tr.explanation, keywords: JSON.stringify(tr.keywords) });
       db.prepare('DELETE FROM aliases WHERE sign_id = ?').run(s.id);
       [...new Set(s.aliases)].forEach(text => db.prepare('INSERT OR IGNORE INTO aliases VALUES (?,?,?)').run(s.id, text, normalize(text)));
-      let primary;
-      if (s.photo) primary = photo(s.photo);
-      else primary = { path: s.image || `assets/ax/generated/${s.generated}.png`, kind: 'illustration', author: 'Sign by Sign · OpenAI image generation', license: 'AI-generated educational example', sourceUrl: '', licenseUrl: '', changes: 'Original illustration; no claim of an actual branch.', promptReference: s.generated ? 'data/generation-prompts.md' : 'prototype.html original image asset' };
-      put('images', { id: `${s.id}-primary`, sign_id: s.id, path: primary.path, portrait_path: s.portrait || null, role: 'primary', kind: primary.kind, metadata: JSON.stringify(primary) });
-      if (s.context) {
-        const context = photo(s.context);
-        put('images', { id: `${s.id}-context`, sign_id: s.id, path: context.path, portrait_path: null, role: 'context', kind: 'photo', metadata: JSON.stringify(context) });
-      }
+      const illustration = item => ({ path: item.path || `assets/ax/generated/${item.generated}.png`, kind: 'illustration', author: 'Sign by Sign · OpenAI image generation', license: 'AI-generated educational example', sourceUrl: '', licenseUrl: '', changes: 'Original fictional learning image; no claim of an actual branch.', promptReference: 'data/generation-prompts.md' });
+      let configured = s.images;
+      if (!configured) configured = [s.photo ? { photo: s.photo } : (s.generated ? { generated: s.generated } : { path: s.image, portrait: s.portrait })].concat(s.context ? [{ photo: s.context }] : []);
+      const resolved = configured.map(item => item.photo ? photo(item.photo) : illustration(item));
+      const unique = resolved.filter((item, index, list) => list.findIndex(other => other.path === item.path) === index);
+      db.prepare('DELETE FROM images WHERE sign_id = ?').run(s.id);
+      unique.forEach((item, index) => put('images', { id: `${s.id}-${index === 0 ? 'primary' : `context-${index}`}`, sign_id: s.id, path: item.path, portrait_path: configured[index]?.portrait || null, role: index === 0 ? 'primary' : 'context', kind: item.kind, metadata: JSON.stringify(item) }));
     });
     travelGuides.forEach(guide => put('travel_guides', { sign_id: guide.sign, experience: JSON.stringify(guide.experience), phrases: JSON.stringify(guide.phrases) }));
+    put('app_meta', { key: 'seed_version', value: String(seed.version || 1) });
     db.exec('COMMIT');
   } catch (error) { db.exec('ROLLBACK'); throw error; }
 }
@@ -95,12 +111,14 @@ export function getCatalog(db) {
     const images = db.prepare('SELECT * FROM images WHERE sign_id = ? ORDER BY role DESC').all(s.id).map(i => ({ id: i.id, path: i.path, portrait: i.portrait_path, role: i.role, kind: i.kind, ...JSON.parse(i.metadata) }));
     const primary = images.find(i => i.role === 'primary');
     const translations = Object.fromEntries(db.prepare('SELECT * FROM translations WHERE sign_id = ?').all(s.id).map(tr => [tr.language, { meaning: tr.meaning, explanation: tr.explanation, keywords: JSON.parse(tr.keywords) }]));
-    const guideRow = db.prepare('SELECT * FROM travel_guides WHERE sign_id = ?').get(s.id);
+    const guideRow = db.prepare('SELECT * FROM travel_guides WHERE sign_id = ?').get(s.id) || db.prepare(`SELECT travel_guides.* FROM travel_guides
+      JOIN signs ON signs.id = travel_guides.sign_id JOIN subcategories ON subcategories.id = signs.subcategory_id
+      WHERE subcategories.category_id = ? ORDER BY subcategories.sort_order LIMIT 1`).get(s.category_id);
     const travelGuide = guideRow ? { experience: JSON.parse(guideRow.experience), phrases: JSON.parse(guideRow.phrases) } : { experience: {}, phrases: [] };
     return { id: s.id, category: s.category_id, subcategory: s.subcategory_id, brand: s.brand_id, brandName: s.brand_name, korean: s.korean, difficulty: s.difficulty,
       image: primary.path, portrait: primary.portrait || primary.path, imageKind: primary.kind, images, translations, travelGuide, aliases: db.prepare('SELECT text FROM aliases WHERE sign_id = ?').all(s.id).map(a => a.text), ...translations.en };
   });
-  return { version: 2, categories, subcategories, cards };
+  return { version: 3, categories, subcategories, cards };
 }
 
 if (process.argv.includes('--seed')) {

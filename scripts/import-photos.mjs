@@ -1,5 +1,6 @@
 // Download only selected, openly licensed photographs; retain attribution.
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -7,17 +8,35 @@ const selected = [
   ['starbucks', 'File:Starbucks in Insadong, Seoul.jpg'],
   ['hospital', 'File:W병원 전경.jpg'],
   ['bus', 'File:서울버스정류장.jpg'],
-  ['taxi', 'File:센트럴 앞 택시정류장.jpg']
+  ['bus-smart-shelter', 'File:Seoul Smart Shelter outside.jpg'],
+  ['taxi', 'File:센트럴 앞 택시정류장.jpg'],
+  ['taxi-incheon', 'File:인천버스터미널 택시타는곳.jpg'],
+  ['subway-entrance', 'File:Seoul grand park subway entrance.jpg'],
+  ['subway-station-sign', 'File:Seoul-metro-124-Cheongnyangni-station-sign-20191023-110238.jpg'],
+  ['mcdonalds', 'File:Mcdonalds seoul.JPG'],
+  ['subway-restaurant', 'File:Subway storefront in Tokyo, 2019 - 314.jpg'],
+  ['baskin-robbins', 'File:A Baskin Robbins Store in South Korea.jpg'],
+  ['kfc', 'File:Harrisburg IL - KFC restaurant.JPG'],
+  ['burger-king', 'File:20150208버거킹 과천점.jpg']
 ];
 const directory = path.join(root, 'assets/ax/photos');
 await mkdir(directory, { recursive: true });
 await mkdir(path.join(root, 'data'), { recursive: true });
 const manifest = [];
+const hashes = new Map();
+async function fetchWithRetry(url) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const response = await fetch(url, { headers: { 'User-Agent': 'SignBySign/0.2 educational prototype (contact: repository owner)' } });
+    if (response.status !== 429) return response;
+    await new Promise(resolve => setTimeout(resolve, 3000 * (attempt + 1)));
+  }
+  throw new Error(`Rate limited: ${url}`);
+}
 for (const [id, title] of selected) {
   const api = new URL('https://commons.wikimedia.org/w/api.php');
   api.search = new URLSearchParams({ action: 'query', format: 'json', titles: title,
-    prop: 'imageinfo', iiprop: 'url|extmetadata', iiurlwidth: '1600' });
-  const response = await fetch(api, { headers: { 'User-Agent': 'SignBySign/0.1 educational prototype' } });
+    prop: 'imageinfo', iiprop: 'url|size|extmetadata', iiurlwidth: '1600' });
+  const response = await fetchWithRetry(api);
   if (!response.ok) throw new Error(`Metadata request failed: ${response.status}`);
   const json = await response.json();
   const info = Object.values(json.query.pages)[0]?.imageinfo?.[0];
@@ -27,14 +46,19 @@ for (const [id, title] of selected) {
   if (!/^(CC BY|CC0|Public domain)/.test(license || '')) throw new Error(`Review license: ${title}`);
   const url = new URL(info.thumburl || info.url);
   url.search = '';
-  const image = await fetch(url, { headers: { 'User-Agent': 'SignBySign/0.1 educational prototype' } });
+  const image = await fetchWithRetry(url);
   if (!image.ok || !image.headers.get('content-type')?.startsWith('image/')) throw new Error(`Image request failed: ${title} (${image.status})`);
+  const bytes = Buffer.from(await image.arrayBuffer());
+  const hash = createHash('sha256').update(bytes).digest('hex');
+  if (hashes.has(hash)) throw new Error(`Duplicate photo: ${title} matches ${hashes.get(hash)}`);
+  hashes.set(hash, title);
   const localPath = `assets/ax/photos/${id}.jpg`;
-  await writeFile(path.join(root, localPath), Buffer.from(await image.arrayBuffer()));
+  await writeFile(path.join(root, localPath), bytes);
   const clean = value => (value || '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
   manifest.push({ id, path: localPath, title, kind: 'photo', sourceUrl: info.descriptionurl,
     downloadUrl: url.href, author: clean(metadata.Artist?.value), license,
     licenseUrl: metadata.LicenseUrl?.value || '', changes: 'Unedited Wikimedia thumbnail; displayed with CSS object-fit.',
+    width: info.thumbwidth || info.width, height: info.thumbheight || info.height, sha256: hash,
     retrievedAt: new Date().toISOString().slice(0, 10) });
   console.log(`Imported ${id}: ${license}`);
 }

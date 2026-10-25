@@ -49,7 +49,7 @@ test('HTTP serves the full webpage and database catalog', async () => {
   assert.match(styles, /\.quick-camera-btn\s*\{/);
   assert.match(styles, /\.useful-language\s+li\s*\{/);
   const catalog = await (await fetch(base + '/api/catalog')).json();
-  assert.equal(catalog.cards.length, 12);
+  assert.equal(catalog.cards.length, 22);
   assert.equal(catalog.categories.length, 4);
   for (const filename of ['/ax.js', '/ax.css', '/vendor/tesseract/tesseract.min.js', '/vendor/tesseract/worker.min.js', '/vendor/core/tesseract-core-simd-lstm.wasm.js', '/assets/ax/generated/mega.png']) {
     assert.equal((await fetch(base + filename, { method: 'HEAD' })).status, 200, filename);
@@ -84,8 +84,8 @@ test('HTTP matching returns exact, uncertain, ambiguous and unknown states', asy
 
 test('one user submission is visible to another and becomes public after independent verification', async () => {
   const created = await contribute({
-    storeName: '함께배움카페', ocrText: '함께배움카페', category: 'cafe', description: '여행자가 쉬어갈 수 있는 동네 카페',
-    consent: true, photoData: '', clientId: 'client-user-a-0001'
+    storeName: '함께배움카페', ocrText: '함께배움카페', category: 'cafe', subcategory: 'coffee_shop', description: '여행자가 쉬어갈 수 있는 동네 카페',
+    consent: true, photoConsent: false, photoData: '', clientId: 'client-user-a-0001'
   });
   assert.equal(created.status, 201);
   const candidate = await created.json();
@@ -112,6 +112,24 @@ test('one user submission is visible to another and becomes public after indepen
   const sharedMatchPayload = await sharedMatch.json();
   assert.equal(sharedMatchPayload.status, 'matched');
   assert.match(sharedMatchPayload.matchedId, /^community-/);
+});
+
+test('photo upload requires separate consent and support requests are accepted', async () => {
+  const contribution = await contribute({
+    storeName: '개인정보분리약국', ocrText: '개인정보분리약국', category: 'medical', subcategory: 'pharmacy', description: '테스트 약국',
+    consent: true, photoConsent: false, photoData: 'data:image/jpeg;base64,AAAA', clientId: 'client-privacy-0001'
+  });
+  assert.equal(contribution.status, 201);
+  assert.equal((await contribution.json()).hasPhoto, false);
+
+  const support = await fetch(base + '/api/support', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'inquiry', email: 'tester@example.com', message: '앱 서버 연결 문의입니다.', context: { screen: 'settings' }, clientId: 'client-support-0001' })
+  });
+  assert.equal(support.status, 201);
+  assert.equal((await support.json()).status, 'open');
+  const health = await (await fetch(base + '/api/health')).json();
+  assert.equal(health.support.open, 1);
 });
 
 test('invalid API inputs are rejected without crashing', async () => {
