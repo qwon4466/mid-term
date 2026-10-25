@@ -13,3 +13,4 @@ android/build/
 android/local.properties
 qa-captures/
 /SignBySign-Android.apk
+/SignBySign-Android.apk.sha256
