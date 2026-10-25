@@ -1,6 +1,6 @@
 # Sign by Sign Android APK
 
-이 앱은 Capacitor로 기존 `ax.js` 화면을 Android WebView에 담습니다. 앱 설치와 사용에 PC 서버가 필요하지 않습니다. 간판 데이터, Tesseract OCR 언어 파일, 사진 자산을 APK에 포함합니다.
+이 앱은 Capacitor로 기존 `ax.js` 화면을 Android WebView에 담습니다. 간판 데이터, Tesseract OCR 언어 파일, 사진 자산을 APK에 포함하므로 촬영·OCR·기본 학습·복습은 서버 없이 동작합니다. 사용자 간 공동 학습, 신고·문의, 실제 장소 검색은 인터넷에서 접근 가능한 공유 서버가 필요합니다.
 
 앱 아이콘은 기존 청록색 `ㅅ` 로고를 Android 적응형 아이콘으로 만든 것입니다. [512px 미리보기](assets/app-icon.png), [SVG 원본](assets/app-icon.svg)이 있으며 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-icons.ps1`로 Android 아이콘 크기별 파일을 다시 만들 수 있습니다. 적응형 아이콘은 Android의 모양과 테마에 맞춰 표시됩니다. [Android 아이콘 규격](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive)
 
@@ -24,9 +24,10 @@ npm run android:apk
 
 1. 삼성폰을 USB로 PC에 연결하고 잠금을 풉니다. 폰의 USB 알림에서 **파일 전송**을 선택합니다.
 2. PC의 `SignBySign-Android.apk`를 폰의 `Download` 폴더에 복사합니다.
-3. 폰에서 **내 파일 → 다운로드 → SignBySign-Android.apk**를 열고 설치합니다. `내 파일`에 대해 **알 수 없는 앱 설치**를 허용하라는 화면이 뜨면 해당 앱만 허용합니다. 메뉴 이름은 삼성폰 모델과 One UI 버전에 따라 달라질 수 있습니다. [삼성 설치 안내](https://www.samsung.com/us/support/troubleshoot/TSG10001913/)
-4. **자동 차단**이 설치를 막는 경우에만 `설정 → 보안 및 개인정보 보호 → 자동 차단`을 잠시 끄고 설치 후 다시 켭니다. [삼성 자동 차단 안내](https://www.samsung.com/us/support/answer/ANS10003636/)
-5. 앱 목록에서 청록색 **Sign by Sign** 아이콘을 열고 언어를 고른 뒤, 상단 카메라 아이콘으로 간판을 찍어 봅니다.
+3. 기존 테스트 APK가 이미 설치되어 있고 서명 충돌로 업데이트가 거부되면 기존 앱을 삭제합니다. 앱을 삭제하면 기기 안의 학습 기록도 삭제됩니다.
+4. 폰에서 **내 파일 → 다운로드 → SignBySign-Android.apk**를 열고 설치합니다. `내 파일`에 대해 **알 수 없는 앱 설치**를 허용하라는 화면이 뜨면 해당 앱만 허용합니다. 메뉴 이름은 삼성폰 모델과 One UI 버전에 따라 달라질 수 있습니다. [삼성 설치 안내](https://www.samsung.com/us/support/troubleshoot/TSG10001913/)
+5. **자동 차단**이 설치를 막는 경우에만 `설정 → 보안 및 개인정보 보호 → 자동 차단`을 잠시 끄고 설치 후 다시 켭니다. [삼성 자동 차단 안내](https://www.samsung.com/us/support/answer/ANS10003636/)
+6. 앱 목록에서 청록색 **Sign by Sign** 아이콘을 열고 언어를 고른 뒤, 상단 카메라 아이콘으로 간판을 찍어 봅니다.
 
 USB 디버깅을 이미 켰고 Android SDK의 `adb`를 사용한다면, PC에서 바로 설치할 수도 있습니다. 폰에 뜨는 USB 디버깅 허용 창을 승인한 후 다음을 실행합니다. [Android 실기기 연결 안내](https://developer.android.com/studio/run/device)
 

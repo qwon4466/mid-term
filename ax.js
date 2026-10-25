@@ -50,7 +50,7 @@
         downloadAndroid: { ko: "Android APK", en: "Android APK", ja: "Android APK" },
         installTitle: { ko: "공기계에서 바로 테스트해 보세요.", en: "Try it on a spare Android phone.", ja: "予備のAndroid端末ですぐ試せます。" },
         installBody: { ko: "현재 준비된 디버그 APK를 내려받아 Android 7.0 이상 기기에 설치할 수 있어요. 학습 데이터와 OCR 파일이 앱에 포함되어 인터넷 없이도 기본 기능이 동작합니다.", en: "Download the ready-to-test debug APK for Android 7.0 or later. Core learning data and OCR files are bundled for offline use.", ja: "Android 7.0以降向けのデバッグAPKをダウンロードできます。学習データとOCRファイルを同梱し、基本機能はオフラインでも動作します。" },
-        installNote: { ko: "약 82MB · 테스트용 디버그 서명", en: "About 82 MB · debug-signed test build", ja: "約82MB・テスト用デバッグ署名" },
+        installNote: { ko: "약 127MB · 테스트용 디버그 서명", en: "About 127 MB · debug-signed test build", ja: "約127MB・テスト用デバッグ署名" },
         downloadApk: { ko: "APK 다운로드", en: "Download APK", ja: "APKをダウンロード" },
         continue: { ko: "계속", en: "Continue", ja: "次へ" },
         skip: { ko: "건너뛰기", en: "Skip", ja: "スキップ" },
