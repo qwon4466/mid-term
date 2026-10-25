@@ -4,6 +4,7 @@ import { chooseAdaptiveMatch, matchCatalog, normalizeText, recognizedPieces, sug
 
 const LEARNING_KEY = 'sign-by-sign-ai-learning-v1';
 const COMMUNITY_KEY = 'sign-by-sign-community-v1';
+const COMMUNITY_CLIENT_KEY = 'sign-by-sign-community-client-v1';
 
 function readJson(key, fallback) {
   try {
@@ -24,7 +25,15 @@ function learningState() {
 }
 
 function communityState() {
-  return readJson(COMMUNITY_KEY, { queue: [], publishedCards: [], version: 0, lastSyncAt: 0, lastSyncStatus: 'offline' });
+  return readJson(COMMUNITY_KEY, { queue: [], publishedCards: [], sharedContributions: [], version: 0, lastSyncAt: 0, lastSyncStatus: 'offline' });
+}
+
+function communityClientId() {
+  let value = localStorage.getItem(COMMUNITY_CLIENT_KEY);
+  if (value && /^[a-zA-Z0-9._:-]{8,120}$/.test(value)) return value;
+  value = `client-${globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+  localStorage.setItem(COMMUNITY_CLIENT_KEY, value);
+  return value;
 }
 
 function safeImagePath(value) {
@@ -113,6 +122,7 @@ function getLearningStats() {
     learnedAliases: Object.keys(learned.aliases || {}).length,
     feedbackCount: learned.feedbackCount || 0,
     pendingContributions: (community.queue || []).filter(item => item.status === 'pending').length,
+    communityCandidates: (community.sharedContributions || []).length,
     publishedCards: (community.publishedCards || []).length,
     catalogVersion: community.version || 0,
     lastSyncAt: community.lastSyncAt || 0,
@@ -131,7 +141,8 @@ function queueContribution(input) {
     category: String(input.category || '').slice(0, 80),
     description: String(input.description || '').trim().slice(0, 800),
     photoData: String(input.photoData || '').slice(0, 600000),
-    consent: input.consent === true
+    consent: input.consent === true,
+    clientId: communityClientId()
   };
   if (!item.storeName || !item.category || !item.consent) throw new Error('Name, category and consent are required.');
   state.queue = [item, ...(state.queue || [])].slice(0, 20);
@@ -159,6 +170,7 @@ async function syncCommunity() {
     }
     if (published && Array.isArray(published.cards)) {
       state.publishedCards = published.cards.filter(validPublishedCard);
+      state.sharedContributions = Array.isArray(published.pending) ? published.pending : [];
       state.version = Number(published.version) || state.version || 0;
     }
 
@@ -166,8 +178,19 @@ async function syncCommunity() {
       for (const item of state.queue.filter(entry => entry.status === 'pending')) {
         const response = await fetch(config.communitySubmitUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) });
         if (!response.ok) throw new Error(`Contribution ${response.status}`);
+        const accepted = await response.json();
         item.status = 'submitted';
+        item.serverId = accepted.id;
         item.submittedAt = Date.now();
+      }
+      if (config.communityCatalogUrl) {
+        const refreshed = await fetch(config.communityCatalogUrl, { cache: 'no-store' });
+        if (refreshed.ok) {
+          const latest = await refreshed.json();
+          if (Array.isArray(latest.cards)) state.publishedCards = latest.cards.filter(validPublishedCard);
+          state.sharedContributions = Array.isArray(latest.pending) ? latest.pending : [];
+          state.version = Number(latest.version) || state.version || 0;
+        }
       }
     }
     state.lastSyncAt = Date.now();
@@ -190,6 +213,22 @@ function getContributionQueue() {
   return communityState().queue || [];
 }
 
+function getCommunityFeed() {
+  return communityState().sharedContributions || [];
+}
+
+async function voteCommunity({ id, vote }) {
+  const config = globalThis.SignBySignConfig || {};
+  if (!config.communityVoteUrl || !id || !['confirm', 'reject'].includes(vote)) throw new Error('Community voting is not connected.');
+  const response = await fetch(`${config.communityVoteUrl}/${encodeURIComponent(id)}/vote`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vote, clientId: communityClientId() })
+  });
+  if (!response.ok) throw new Error(`Community vote ${response.status}`);
+  const result = await response.json();
+  await syncCommunity();
+  return result;
+}
+
 globalThis.SignNative = {
   isNative: Capacitor.isNativePlatform(),
   platform: Capacitor.getPlatform(),
@@ -204,9 +243,11 @@ globalThis.SignNative = {
   reinforce,
   queueContribution,
   syncCommunity,
+  voteCommunity,
   getLearningStats,
   getPublishedCards,
-  getContributionQueue
+  getContributionQueue,
+  getCommunityFeed
 };
 
 globalThis.dispatchEvent(new CustomEvent('signnative-ready', { detail: { platform: Capacitor.getPlatform() } }));

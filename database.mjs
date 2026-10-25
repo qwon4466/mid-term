@@ -21,7 +21,30 @@ export function openDatabase(filename = path.join(root, 'data/signs.sqlite')) {
     CREATE TABLE IF NOT EXISTS aliases (sign_id TEXT NOT NULL REFERENCES signs(id), text TEXT NOT NULL, normalized TEXT NOT NULL, PRIMARY KEY(sign_id, normalized));
     CREATE INDEX IF NOT EXISTS aliases_lookup ON aliases(normalized);
     CREATE TABLE IF NOT EXISTS images (id TEXT PRIMARY KEY, sign_id TEXT NOT NULL REFERENCES signs(id), path TEXT NOT NULL, portrait_path TEXT, role TEXT NOT NULL CHECK(role IN ('primary','context')), kind TEXT NOT NULL CHECK(kind IN ('photo','illustration')), metadata TEXT NOT NULL);
-    CREATE UNIQUE INDEX IF NOT EXISTS one_primary_image ON images(sign_id) WHERE role = 'primary';`);
+    CREATE UNIQUE INDEX IF NOT EXISTS one_primary_image ON images(sign_id) WHERE role = 'primary';
+    CREATE TABLE IF NOT EXISTS community_contributions (
+      id TEXT PRIMARY KEY,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      store_name TEXT NOT NULL,
+      normalized_name TEXT NOT NULL,
+      ocr_text TEXT NOT NULL,
+      category_id TEXT NOT NULL REFERENCES categories(id),
+      description TEXT NOT NULL,
+      photo_data TEXT NOT NULL DEFAULT '',
+      submitter_hash TEXT NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('pending','published','rejected')),
+      published_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS community_status_created ON community_contributions(status, created_at DESC);
+    CREATE INDEX IF NOT EXISTS community_normalized_name ON community_contributions(normalized_name);
+    CREATE TABLE IF NOT EXISTS community_votes (
+      contribution_id TEXT NOT NULL REFERENCES community_contributions(id) ON DELETE CASCADE,
+      voter_hash TEXT NOT NULL,
+      value TEXT NOT NULL CHECK(value IN ('confirm','reject')),
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY(contribution_id, voter_hash)
+    );`);
   const signCount = db.prepare('SELECT count(*) n FROM signs').get().n;
   const guideCount = db.prepare('SELECT count(*) n FROM travel_guides').get().n;
   if (!signCount || guideCount !== signCount) seedDatabase(db);

@@ -7,7 +7,7 @@ import { root } from '../database.mjs';
 let child, base;
 before(async () => {
   child = spawn(process.execPath, ['server.mjs'], {
-    cwd: root, env: { ...process.env, PORT: '0', HOST: '127.0.0.1', SIGN_DATABASE: ':memory:', SSL_CERT: '', SSL_KEY: '' },
+    cwd: root, env: { ...process.env, PORT: '0', HOST: '127.0.0.1', SIGN_DATABASE: ':memory:', SSL_CERT: '', SSL_KEY: '', SIGN_ALLOWED_ORIGINS: 'http://localhost', NAVER_SEARCH_CLIENT_ID: '', NAVER_SEARCH_CLIENT_SECRET: '', GOOGLE_PLACES_API_KEY: '' },
     stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true
   });
   await new Promise((resolve, reject) => {
@@ -25,6 +25,8 @@ before(async () => {
 after(async () => { if (child && child.exitCode === null) { const done = once(child, 'exit'); child.kill(); await done; } });
 
 const post = (input, headers = {}) => fetch(base + '/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(input) });
+const discover = (input, headers = {}) => fetch(base + '/api/discover', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(input) });
+const contribute = (input, headers = {}) => fetch(base + '/api/community/contributions', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(input) });
 
 test('HTTP serves the full webpage and database catalog', async () => {
   const page = await fetch(base + '/');
@@ -37,7 +39,8 @@ test('HTTP serves the full webpage and database catalog', async () => {
   const styles = await (await fetch(base + '/ax.css')).text();
   assert.match(client, /data-action="quick-camera"/);
   assert.match(client, /usePhoto\(event\.target\.files\[0\], true\)/);
-  assert.match(client, /mapSearchLinks\(camera\.text\)/);
+  assert.match(client, /function discoverUnknown\(run\)/);
+  assert.match(client, /renderDiscoveryResult/);
   assert.match(client, /class="scan-result travel-result"/);
   assert.match(client, /guide\.experience\[state\.language\]/);
   assert.match(client, /function detectedPlaceName\(card\)/);
@@ -53,6 +56,21 @@ test('HTTP serves the full webpage and database catalog', async () => {
   }
 });
 
+test('unknown signs receive a useful discovery card instead of a dead end', async () => {
+  const knownBrand = await discover({ text: '빽다방', language: 'ko' });
+  assert.equal(knownBrand.status, 200);
+  const knownPayload = await knownBrand.json();
+  assert.equal(knownPayload.category, 'cafe');
+  assert.ok(knownPayload.phrases.length >= 2);
+
+  const unknown = await discover({ text: '새로운상점123', language: 'ko' });
+  assert.equal(unknown.status, 200);
+  const unknownPayload = await unknown.json();
+  assert.equal(unknownPayload.status, 'guidance');
+  assert.ok(unknownPayload.phrases.length >= 3);
+  assert.equal(unknownPayload.searchLinks.length, 2);
+});
+
 test('HTTP matching returns exact, uncertain, ambiguous and unknown states', async () => {
   for (const [text, source, confidence, status] of [
     ['메가커피', 'manual', 0, 'matched'], ['약국', 'ocr', 40, 'candidates'],
@@ -64,6 +82,38 @@ test('HTTP matching returns exact, uncertain, ambiguous and unknown states', asy
   }
 });
 
+test('one user submission is visible to another and becomes public after independent verification', async () => {
+  const created = await contribute({
+    storeName: '함께배움카페', ocrText: '함께배움카페', category: 'cafe', description: '여행자가 쉬어갈 수 있는 동네 카페',
+    consent: true, photoData: '', clientId: 'client-user-a-0001'
+  });
+  assert.equal(created.status, 201);
+  const candidate = await created.json();
+  assert.equal(candidate.status, 'pending');
+  assert.equal(candidate.confirmations, 1);
+
+  const userBView = await (await fetch(base + '/api/community')).json();
+  assert.ok(userBView.pending.some(item => item.id === candidate.id && item.storeName === '함께배움카페'));
+
+  const verified = await fetch(`${base}/api/community/contributions/${candidate.id}/vote`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vote: 'confirm', clientId: 'client-user-b-0002' })
+  });
+  assert.equal(verified.status, 200);
+  const verifiedPayload = await verified.json();
+  assert.equal(verifiedPayload.status, 'published');
+  assert.equal(verifiedPayload.confirmations, 2);
+
+  const publicCatalog = await (await fetch(base + '/api/community')).json();
+  assert.ok(publicCatalog.cards.some(card => card.korean === '함께배움카페' && card.category === 'cafe'));
+  assert.ok(!publicCatalog.pending.some(item => item.id === candidate.id));
+
+  const sharedMatch = await post({ text: '함께배움카페', source: 'manual', confidence: 0 });
+  const sharedMatchPayload = await sharedMatch.json();
+  assert.equal(sharedMatchPayload.status, 'matched');
+  assert.match(sharedMatchPayload.matchedId, /^community-/);
+});
+
 test('invalid API inputs are rejected without crashing', async () => {
   for (const input of [null, [], {}, { text: '', source: 'manual', confidence: 0 }, { text: '약국', source: 'other', confidence: 0 }, { text: '약국', source: 'ocr', confidence: -1 }, { text: '약국', source: 'ocr', confidence: 101 }, { text: '가'.repeat(2001), source: 'manual', confidence: 0 }]) {
     assert.equal((await post(input)).status, 400);
@@ -71,6 +121,8 @@ test('invalid API inputs are rejected without crashing', async () => {
   assert.equal((await fetch(base + '/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{' })).status, 400);
   assert.equal((await fetch(base + '/api/match', { method: 'POST', body: '약국' })).status, 415);
   assert.equal((await post({ text: 'a'.repeat(17000), source: 'manual', confidence: 0 })).status, 413);
+  assert.equal((await discover({ text: '', language: 'ko' })).status, 400);
+  assert.equal((await discover({ text: '간판', language: 'xx' })).status, 400);
   assert.equal((await fetch(base + '/api/health')).status, 200);
 });
 
@@ -80,6 +132,11 @@ test('database/source files, traversal, cross-origin writes and unexpected metho
   }
   for (const origin of ['https://other.example', 'null', 'malformed']) {
     assert.equal((await post({ text: '약국', source: 'manual', confidence: 0 }, { Origin: origin })).status, 403);
+    assert.equal((await discover({ text: '빽다방', language: 'ko' }, { Origin: origin })).status, 403);
+    assert.equal((await contribute({ storeName: '거부', category: 'cafe', consent: true, clientId: 'client-cross-origin' }, { Origin: origin })).status, 403);
   }
+  const preflight = await fetch(base + '/api/community', { method: 'OPTIONS', headers: { Origin: 'http://localhost', 'Access-Control-Request-Method': 'GET' } });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('access-control-allow-origin'), 'http://localhost');
   assert.equal((await fetch(base + '/api/catalog', { method: 'DELETE' })).status, 405);
 });

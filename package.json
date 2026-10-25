@@ -8,6 +8,8 @@
   },
   "scripts": {
     "start": "node server.mjs",
+    "start:lan": "node scripts/start-lan.mjs",
+    "build:web": "node scripts/generate-web-catalog.mjs",
     "db:seed": "node database.mjs --seed",
     "assets:photos": "node scripts/import-photos.mjs",
     "assets:ocr": "node scripts/download-ocr.mjs",

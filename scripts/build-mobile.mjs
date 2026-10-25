@@ -1,11 +1,16 @@
 import { build } from 'esbuild';
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getCatalog, openDatabase } from '../database.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 const output = path.join(root, 'www');
+const require = createRequire(import.meta.url);
+const tesseractRoot = path.dirname(require.resolve('tesseract.js/package.json'));
+const tesseractRequire = createRequire(require.resolve('tesseract.js/package.json'));
+const tesseractCoreRoot = path.dirname(tesseractRequire.resolve('tesseract.js-core/package.json'));
 if (path.relative(root, output) !== 'www') throw new Error('Refusing to build outside the project www directory.');
 
 const required = [
@@ -30,10 +35,10 @@ for (const [source, destination] of [
   ['assets', 'assets'],
   ['ocr-data', 'ocr-data'],
   ['data/community-catalog.json', 'data/community-catalog.json'],
-  ['node_modules/tesseract.js/dist', 'vendor/tesseract'],
-  ['node_modules/tesseract.js-core', 'vendor/core']
+  [path.join(tesseractRoot, 'dist'), 'vendor/tesseract'],
+  [tesseractCoreRoot, 'vendor/core']
 ]) {
-  cpSync(path.join(root, source), path.join(output, destination), { recursive: true });
+  cpSync(path.isAbsolute(source) ? source : path.join(root, source), path.join(output, destination), { recursive: true });
 }
 
 const db = openDatabase();

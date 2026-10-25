@@ -2,12 +2,20 @@
       "use strict";
       var STORAGE_KEY = "sign-by-sign-ax-v1";
       var mobileMode = window.SIGN_BY_SIGN_MODE === "mobile";
+      var standaloneMode = window.SIGN_BY_SIGN_MODE === "standalone" || window.location.protocol === "file:";
+      var localMatchMode = mobileMode || standaloneMode;
       var catalog;
       try {
-        var response = await fetch(mobileMode ? "./data/catalog.json" : "/api/catalog", { cache: "no-store" });
-        if (!response.ok) throw new Error("Catalog unavailable");
-        catalog = await response.json();
+        if (standaloneMode && window.SignBySignCatalog) catalog = window.SignBySignCatalog;
+        else {
+          var response = await fetch(mobileMode ? "./data/catalog.json" : "/api/catalog", { cache: "no-store" });
+          if (!response.ok) throw new Error("Catalog unavailable");
+          catalog = await response.json();
+        }
       } catch (_) {
+        if (window.SignBySignCatalog) catalog = window.SignBySignCatalog;
+      }
+      if (!catalog) {
         document.getElementById("app").innerHTML = '<div class="startup-error"><h1>간판 데이터를 불러오지 못했어요</h1><p>' + (mobileMode ? '앱에 포함된 데이터가 손상됐습니다. 앱을 다시 설치해 주세요.' : '이 웹페이지는 서버와 함께 실행합니다. 프로젝트 폴더에서 <code>npm start</code> 후 <code>http://localhost:4173</code>으로 접속하세요.') + '</p><p>Could not load the bundled sign catalog.</p><button class="primary-btn" id="reloadPage">다시 연결 · Retry</button></div>';
         document.getElementById("reloadPage").addEventListener("click", function () { location.reload(); });
         return;
@@ -39,6 +47,11 @@
         desktopSwipe: { ko: "카드를 스와이프하거나 <span class=\"kbd\">←</span> <span class=\"kbd\">→</span> 키로 넘길 수 있습니다.", en: "Swipe the card or use <span class=\"kbd\">←</span> <span class=\"kbd\">→</span> keys.", ja: "カードをスワイプするか、<span class=\"kbd\">←</span> <span class=\"kbd\">→</span> キーを使えます。" },
         desktopSpace: { ko: "<span class=\"kbd\">Space</span> 키를 누르면 뜻이 열립니다.", en: "Press <span class=\"kbd\">Space</span> to reveal the meaning.", ja: "<span class=\"kbd\">Space</span> キーで意味を表示できます。" },
         desktopSample: { ko: "예시 간판 사진 6장을 포함한 디자인 체험판입니다.", en: "This design prototype includes six illustrative sign photos.", ja: "看板のイメージ写真6枚を含むデザイン体験版です。" },
+        downloadAndroid: { ko: "Android APK", en: "Android APK", ja: "Android APK" },
+        installTitle: { ko: "공기계에서 바로 테스트해 보세요.", en: "Try it on a spare Android phone.", ja: "予備のAndroid端末ですぐ試せます。" },
+        installBody: { ko: "현재 준비된 디버그 APK를 내려받아 Android 7.0 이상 기기에 설치할 수 있어요. 학습 데이터와 OCR 파일이 앱에 포함되어 인터넷 없이도 기본 기능이 동작합니다.", en: "Download the ready-to-test debug APK for Android 7.0 or later. Core learning data and OCR files are bundled for offline use.", ja: "Android 7.0以降向けのデバッグAPKをダウンロードできます。学習データとOCRファイルを同梱し、基本機能はオフラインでも動作します。" },
+        installNote: { ko: "약 82MB · 테스트용 디버그 서명", en: "About 82 MB · debug-signed test build", ja: "約82MB・テスト用デバッグ署名" },
+        downloadApk: { ko: "APK 다운로드", en: "Download APK", ja: "APKをダウンロード" },
         continue: { ko: "계속", en: "Continue", ja: "次へ" },
         skip: { ko: "건너뛰기", en: "Skip", ja: "スキップ" },
         next: { ko: "다음", en: "Next", ja: "次へ" },
@@ -352,9 +365,9 @@
     "ja": "写真から文字を読む"
   },
   "scanScope": {
-    "ko": "등록된 업종·브랜드를 안내해요. 특정 지점이나 현재 영업 여부를 확인하는 기능은 아니에요.",
-    "en": "Results identify a registered type or brand, not a particular branch or live opening status.",
-    "ja": "登録済みの業種・ブランドを案内します。特定の店舗や現在の営業状況は確認できません。"
+    "ko": "등록 정보가 없으면 장소 검색과 일반 업종 정보를 이용해 실용 안내를 만들어요. 정확한 지점·영업시간은 지도에서 확인해 주세요.",
+    "en": "If the sign is not registered, place search and general business information create a practical guide. Confirm the branch and hours on the map.",
+    "ja": "未登録の場合は場所検索と一般的な業種情報から実用案内を作ります。正確な店舗・営業時間は地図で確認してください。"
   },
   "ocrLoading": {
     "ko": "문자 인식을 준비하고 있어요…",
@@ -496,6 +509,36 @@
     "en": "Edit the text or take a closer photo of just the sign.",
     "ja": "文字を修正するか、看板だけを撮り直してください。"
   },
+  "searchingWeb": {
+    "ko": "등록되지 않은 간판이에요. 네이버·Google 장소 정보와 일반 업종 안내를 확인하고 있어요…",
+    "en": "This sign is not in the catalog. Checking Naver, Google, and general business guidance…",
+    "ja": "未登録の看板です。NAVER・Googleの場所情報と一般的な業種案内を確認しています…"
+  },
+  "searchResultBadge": {
+    "ko": "장소 검색 기반 안내",
+    "en": "Search-backed guidance",
+    "ja": "場所検索に基づく案内"
+  },
+  "generalGuideBadge": {
+    "ko": "미등록 간판 실용 안내",
+    "en": "Unregistered sign guidance",
+    "ja": "未登録看板の実用案内"
+  },
+  "searchEvidence": {
+    "ko": "확인한 검색 결과",
+    "en": "Search evidence",
+    "ja": "確認した検索結果"
+  },
+  "searchNextLinks": {
+    "ko": "더 확인할 지도 검색",
+    "en": "Check these map searches",
+    "ja": "地図検索でさらに確認"
+  },
+  "guideConfidence": {
+    "ko": "안내 신뢰도 {n}%",
+    "en": "Guidance confidence {n}%",
+    "ja": "案内信頼度 {n}%"
+  },
   "typeMatch": {
     "ko": "업종 표현 일치",
     "en": "Type expression matched",
@@ -570,10 +613,19 @@
       Object.assign(messages, {
         community: { ko: "AI 학습", en: "AI learning", ja: "AI学習" },
         communityTitle: { ko: "함께 똑똑해지는 간판 AI", en: "A sign AI that improves together", ja: "みんなで育てる看板AI" },
-        communityBody: { ko: "수정 피드백은 이 기기의 다음 인식에 반영되고, 동의한 새 간판 제보는 검토 대기열에 저장됩니다.", en: "Corrections improve matching on this device. Consented new-sign reports enter a review queue.", ja: "修正はこの端末の次回認識に反映され、同意した新規看板は審査待ちに保存されます。" },
+        communityBody: { ko: "새 간판을 공유 서버에 제보하면 다른 사용자가 확인합니다. 서로 다른 2명이 확인한 정보는 공개 카테고리에 추가되어 모두의 학습에 사용됩니다.", en: "Report a new sign to the shared service. After verification by two distinct users, it is published to the category for everyone to learn.", ja: "新しい看板を共有サーバーへ投稿し、別の利用者が確認します。2人が確認すると公開カテゴリーに追加されます。" },
         learnedAliases: { ko: "학습한 표현", en: "Learned expressions", ja: "学習した表現" },
         feedbackCount: { ko: "AI 피드백", en: "AI feedback", ja: "AIフィードバック" },
         pendingReports: { ko: "검토 대기", en: "Pending review", ja: "審査待ち" },
+        sharedCandidates: { ko: "공동 확인 대기", en: "Community checks", ja: "共同確認待ち" },
+        sharedQueueTitle: { ko: "다른 사용자가 올린 간판", en: "Signs shared by other users", ja: "ほかの利用者が投稿した看板" },
+        myReports: { ko: "내 제보 전송 상태", en: "My report status", ja: "自分の投稿状況" },
+        confirmCommunity: { ko: "정보가 맞아요", en: "Looks correct", ja: "情報は正しい" },
+        rejectCommunity: { ko: "수정이 필요해요", en: "Needs correction", ja: "修正が必要" },
+        communityVotes: { ko: "확인 {a}/{b}명", en: "Verified by {a}/{b}", ja: "確認 {a}/{b}人" },
+        communityPublished: { ko: "공개 카테고리에 추가됐어요.", en: "Added to the public category.", ja: "公開カテゴリーに追加されました。" },
+        communityVoteSaved: { ko: "확인을 반영하고 공개 목록을 다시 동기화했어요.", en: "Your check was saved and the public list was refreshed.", ja: "確認を反映し、公開リストを再同期しました。" },
+        ownReport: { ko: "내 제보", en: "My report", ja: "自分の投稿" },
         submittedReports: { ko: "제출됨 · 검토 중", en: "Submitted for review", ja: "送信済み・審査中" },
         publishedUpdates: { ko: "공개 업데이트", en: "Published updates", ja: "公開更新" },
         syncNow: { ko: "최신 정보 동기화", en: "Sync latest information", ja: "最新情報を同期" },
@@ -594,10 +646,10 @@
         description: { ko: "어떤 곳인지 설명", en: "What kind of place is it?", ja: "どんな場所ですか？" },
         photoConsent: { ko: "이 사진과 수정 정보를 AI 개선용 검토 대기열에 저장하는 데 동의해요.", en: "I consent to saving this photo and correction in the AI improvement review queue.", ja: "写真と修正情報をAI改善の審査待ちに保存することに同意します。" },
         submitReport: { ko: "제보 저장", en: "Save report", ja: "投稿を保存" },
-        reportSaved: { ko: "제보를 기기에 저장했어요. 온라인 제출 서버가 연결되면 검토용으로 동기화됩니다.", en: "Saved on this device. It will sync for review when a submission service is connected.", ja: "端末に保存しました。投稿サービス接続後に審査用として同期されます。" },
+        reportSaved: { ko: "제보를 공유 서버에 전송했어요. 다른 사용자의 확인을 기다립니다.", en: "Sent to the shared service. It is waiting for another user's verification.", ja: "共有サーバーへ送信しました。ほかの利用者の確認待ちです。" },
         suggestedCategory: { ko: "AI 추천 카테고리: {name} · {n}%", en: "AI category suggestion: {name} · {n}%", ja: "AI推奨カテゴリー: {name}・{n}%" },
         queueEmpty: { ko: "아직 제보 대기 항목이 없어요.", en: "No reports are waiting yet.", ja: "審査待ちの投稿はありません。" },
-        privacyLearning: { ko: "사진은 동의 없이 공유되지 않으며 기본 OCR과 개인화 매칭은 기기 안에서 처리됩니다.", en: "Photos are never shared without consent. OCR and personalized matching run on the device by default.", ja: "写真は同意なく共有されません。OCRと個人化マッチングは基本的に端末内で処理されます。" }
+        privacyLearning: { ko: "동의한 제보 정보만 공유 서버로 전송됩니다. 촬영 사진은 검토용으로만 보관하고 공개 카드에는 분류 대표 이미지를 사용합니다.", en: "Only consented reports are sent to the shared service. Photos remain review-only; public cards use category representative images.", ja: "同意した投稿だけを共有サーバーへ送信します。写真は審査用に保管し、公開カードにはカテゴリー代表画像を使います。" }
       });
       if (!mobileMode) {
         messages.settingsHint = {
@@ -606,9 +658,9 @@
           ja: "学習記録はこのブラウザーに保存されます。写真は端末で処理し、読み取った文字だけをサーバーへ送信します。画像の出典で写真とイメージを確認できます。"
         };
         messages.aboutBody = {
-          ko: "한국의 간판을 사진으로 익히는 웹앱입니다. 4개 분야·12개 세부 분류를 SQLite 데이터베이스에서 불러옵니다. 촬영한 사진의 글자를 읽어 등록된 업종·브랜드 표현과 대조합니다.",
-          en: "A web app for learning Korean signs. The SQLite catalog contains 4 categories and 12 types. Read text from your photo and compare it with registered industry and brand terms.",
-          ja: "韓国の看板を写真で学ぶウェブアプリです。SQLiteの4分野・12種類を使い、写真の文字を登録済みの業種やブランドと照合します。"
+          ko: "한국의 간판을 사진으로 익히는 웹앱입니다. 촬영한 글자를 SQLite 카탈로그와 먼저 대조하고, 미등록 간판은 장소 검색과 일반 업종 정보를 이용해 설명과 실용 문장을 제공합니다.",
+          en: "A web app for learning Korean signs. It checks photo text against the SQLite catalog first, then uses place search and general business information to explain unregistered signs with useful phrases.",
+          ja: "韓国の看板を写真で学ぶウェブアプリです。まずSQLiteカタログと照合し、未登録看板は場所検索と一般的な業種情報から説明と実用表現を提供します。"
         };
         messages.cameraPrivacy.en = "Your photo is processed on this device. Only text is sent for matching.";
       }
@@ -717,11 +769,11 @@
       }
 function renderLanguageBar() {
         var links = [["home", "learn"], ["library", "directory"], ["camera", "camera"], ["review", "review"]];
-        if (mobileMode) links.push(["community", "community"]);
+        if (window.SignNative) links.push(["community", "community"]);
         return '<header class="language-bar"><button class="brand" data-action="nav-home" aria-label="Sign by Sign"><span class="brand-mark">ㅅ</span>Sign by Sign</button>' +
           '<nav class="web-links" aria-label="' + escapeHtml(t("mainNavigation")) + '">' + links.map(function (item) {
             return '<button class="' + (screen === item[0] ? 'current' : '') + '" data-action="nav-' + item[0] + '" ' + (screen === item[0] ? 'aria-current="page"' : '') + '>' + t(item[1]) + '</button>';
-          }).join("") + '</nav><div class="header-tools"><button class="icon-btn quick-camera-btn" data-action="quick-camera" aria-label="' + escapeHtml(t("camera")) + '" title="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button>' +
+          }).join("") + '</nav><div class="header-tools"><a class="apk-header-link" href="./SignBySign-Android.apk" download aria-label="' + escapeHtml(t("downloadAndroid")) + '">' + t("downloadAndroid") + '</a><button class="icon-btn quick-camera-btn" data-action="quick-camera" aria-label="' + escapeHtml(t("camera")) + '" title="' + escapeHtml(t("camera")) + '">' + icon("camera") + '</button>' +
           '<button class="language-toggle" data-action="language-menu" aria-label="' + escapeHtml(t("language") + ": " + currentLanguageName()) + '">' + icon("globe") +
           '<span>' + currentLanguageName() + '</span><span aria-hidden="true">⌄</span></button></div></header>';
       }
@@ -735,7 +787,7 @@ function renderLanguageBar() {
       }
 function mainNav(active) {
         return '<nav class="main-nav" aria-label="' + escapeHtml(t("mainNavigation")) + '">' +
-          [["home","home","learn"], ["library","grid","directory"], ["camera","camera","camera"], ["review","bookmark","review"]].concat(mobileMode ? [["community","spark","community"]] : []).map(function (item) {
+          [["home","home","learn"], ["library","grid","directory"], ["camera","camera","camera"], ["review","bookmark","review"]].concat(window.SignNative ? [["community","spark","community"]] : []).map(function (item) {
             return '<button class="nav-item ' + (active === item[0] ? 'active' : '') + '" data-action="nav-' + item[0] + '" ' + (active === item[0] ? 'aria-current="page"' : '') + '>' + icon(item[1]) + t(item[2]) + '</button>';
           }).join("") + '</nav>';
       }
@@ -810,6 +862,7 @@ function renderHome() {
           '<div class="feature-art"><img src="assets/ax/generated/mega.png" alt=""><span class="feature-caption">SIGN BY SIGN · ' + t("illustrativePhoto") + '</span></div></section>' +
           resumeBanner() + '<section class="home-section"><div class="section-head"><h2>' + t("chooseScene") + '</h2><span>' + t("categorySubtitle") + '</span></div>' +
           '<div class="category-grid">' + categoryHtml + '</div>' + controls + footer + '</section>' +
+          '<section class="apk-install-card"><div><span class="small-caps">ANDROID TEST BUILD</span><h2>' + t("installTitle") + '</h2><p>' + t("installBody") + '</p><small>' + t("installNote") + '</small></div><a class="primary-btn" href="./SignBySign-Android.apk" download>' + t("downloadApk") + icon("arrow") + '</a></section>' +
           '<footer class="home-footer"><span>' + t("prototypeNote") + '</span><button class="text-btn" data-action="sources">' + t("sources") + '</button></footer>' +
           '</div></div>' + mainNav("home") + '</div>';
       }
@@ -886,14 +939,22 @@ function renderHome() {
       function renderCommunity() {
         var stats = aiStats();
         var queue = window.SignNative ? window.SignNative.getContributionQueue() : [];
+        var feed = window.SignNative && window.SignNative.getCommunityFeed ? window.SignNative.getCommunityFeed() : [];
+        var ownIds = new Set(queue.map(function (item) { return item.serverId; }).filter(Boolean));
         var queueMarkup = queue.length ? queue.slice(0, 5).map(function (item) {
           return '<li><span><strong lang="ko">' + escapeHtml(item.storeName) + '</strong><small>' + escapeHtml(categoryLabel(item.category)) + ' · ' + new Date(item.createdAt).toLocaleDateString() + '</small></span><b>' + escapeHtml(item.status === "submitted" ? t("submittedReports") : t("pendingReports")) + '</b></li>';
         }).join("") : '<li class="queue-empty">' + t("queueEmpty") + '</li>';
+        var sharedMarkup = feed.length ? feed.slice(0, 12).map(function (item) {
+          var own = ownIds.has(item.id);
+          return '<li class="community-candidate"><div class="community-candidate-copy"><span><strong lang="ko">' + escapeHtml(item.storeName) + '</strong><small>' + escapeHtml(categoryLabel(item.category)) + (item.description ? ' · ' + escapeHtml(item.description) : '') + '</small></span><b>' + escapeHtml(t("communityVotes", { a: item.confirmations || 0, b: item.requiredConfirmations || 2 })) + '</b></div>' +
+            '<div class="community-vote-actions">' + (own ? '<span class="own-report-pill">' + t("ownReport") + '</span>' : '<button class="secondary-btn" data-action="community-vote" data-id="' + escapeHtml(item.id) + '" data-vote="confirm">' + t("confirmCommunity") + '</button><button class="text-btn" data-action="community-vote" data-id="' + escapeHtml(item.id) + '" data-vote="reject">' + t("rejectCommunity") + '</button>') + '</div></li>';
+        }).join("") : '<li class="queue-empty">' + t("queueEmpty") + '</li>';
         return '<div class="screen"><div class="screen-scroll"><div class="page-wrap ai-learning-page"><div class="page-heading"><div><span class="small-caps">ON-DEVICE AI + COMMUNITY</span><h1>' + t("communityTitle") + '</h1><p>' + t("communityBody") + '</p></div>' + settingsButton() + '</div>' +
-          '<div class="ai-stat-grid"><article><strong>' + stats.learnedAliases + '</strong><span>' + t("learnedAliases") + '</span></article><article><strong>' + stats.feedbackCount + '</strong><span>' + t("feedbackCount") + '</span></article><article><strong>' + stats.pendingContributions + '</strong><span>' + t("pendingReports") + '</span></article><article><strong>v' + (stats.catalogVersion || catalog.version || 1) + '</strong><span>' + t("publishedUpdates") + '</span></article></div>' +
+          '<div class="ai-stat-grid"><article><strong>' + stats.learnedAliases + '</strong><span>' + t("learnedAliases") + '</span></article><article><strong>' + stats.feedbackCount + '</strong><span>' + t("feedbackCount") + '</span></article><article><strong>' + (stats.communityCandidates || 0) + '</strong><span>' + t("sharedCandidates") + '</span></article><article><strong>v' + (stats.catalogVersion || catalog.version || 1) + '</strong><span>' + t("publishedUpdates") + '</span></article></div>' +
           '<section class="ai-sync-card"><div><h2>' + t("publishedUpdates") + '</h2><p>' + t("privacyLearning") + '</p></div><button class="primary-btn" data-action="sync-community" ' + (communityBusy ? 'disabled' : '') + '>' + (communityBusy ? t("syncing") : t("syncNow")) + '</button>' + (communityNotice ? '<p class="ai-sync-notice" role="status">' + escapeHtml(communityNotice) + '</p>' : '') + '</section>' +
           '<div class="ai-explain-grid"><article><span class="feature-tag">' + icon("spark") + ' AI FEEDBACK</span><h2>' + t("learningHowTitle") + '</h2><p>' + t("learningHowBody") + '</p></article><article><span class="feature-tag">' + icon("bookmark") + ' SPACED REVIEW</span><h2>' + t("spacedTitle") + '</h2><p>' + t("spacedBody") + '</p></article></div>' +
-          '<section class="contribution-queue"><div class="section-head"><h2>' + t("pendingReports") + '</h2><span>' + queue.length + '</span></div><ul>' + queueMarkup + '</ul></section></div></div>' + mainNav("community") + '</div>';
+          '<section class="contribution-queue shared-contribution-queue"><div class="section-head"><h2>' + t("sharedQueueTitle") + '</h2><span>' + feed.length + '</span></div><ul>' + sharedMarkup + '</ul></section>' +
+          '<section class="contribution-queue"><div class="section-head"><h2>' + t("myReports") + '</h2><span>' + queue.length + '</span></div><ul>' + queueMarkup + '</ul></section></div></div>' + mainNav("community") + '</div>';
       }
 function renderDetail() {
         var card = findCard(detailId);
@@ -1209,7 +1270,7 @@ function renderDetail() {
       }
 
 
-      var camera = { stream: null, photo: null, demo: false, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, selected: null, notice: "", error: false, progress: 0, opening: false, teachOpen: false, teachSaved: false, reinforced: false };
+      var camera = { stream: null, photo: null, demo: false, ratio: 1, url: "", crop: null, busy: false, worker: null, run: 0, request: 0, text: "", edited: true, confidence: 0, result: null, discovery: null, selected: null, notice: "", error: false, progress: 0, opening: false, teachOpen: false, teachSaved: false, reinforced: false };
       function stopCamera() {
         camera.request++;
         camera.opening = false;
@@ -1223,7 +1284,7 @@ function renderDetail() {
       }
       function clearPhoto() {
         if (camera.url && !camera.demo) URL.revokeObjectURL(camera.url);
-        camera.photo = null; camera.demo = false; camera.url = ""; camera.crop = null; camera.result = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false; camera.teachOpen = false; camera.teachSaved = false; camera.reinforced = false;
+        camera.photo = null; camera.demo = false; camera.url = ""; camera.crop = null; camera.result = null; camera.discovery = null; camera.selected = null; camera.text = ""; camera.confidence = 0; camera.edited = true; camera.notice = ""; camera.error = false; camera.teachOpen = false; camera.teachSaved = false; camera.reinforced = false;
       }
       function showSampleScan(id) {
         var card = findCard(id) || cards[0];
@@ -1375,10 +1436,33 @@ function renderDetail() {
         camera.busy = true; camera.notice = t("matching"); render();
         try {
           window.SignNative.queueContribution({ ocrText: camera.text, storeName: name.value, category: category.value, description: description ? description.value : "", consent: true, photoData: await contributionThumbnail() });
+          await window.SignNative.syncCommunity();
+          mergePublishedCards();
           camera.teachSaved = true; camera.teachOpen = false; camera.busy = false; camera.notice = ""; render();
         } catch (_) {
           camera.busy = false; camera.notice = t("matchError"); camera.error = true; render();
         }
+      }
+      function renderDiscoveryResult() {
+        var result = camera.discovery;
+        if (!result) return "";
+        var phrases = (result.phrases || []).map(function (phrase) {
+          return '<li><strong lang="ko">' + escapeHtml(phrase.korean) + '</strong><span class="phrase-pronunciation">' + escapeHtml(phrase.romanization) + '</span><span>' + escapeHtml(phrase.meaning) + '</span></li>';
+        }).join("");
+        var sources = (result.sources || []).map(function (source) {
+          var url = safeUrl(source.url);
+          if (!url) return "";
+          var provider = source.provider === "naver" || source.provider === "naver-search" ? "NAVER" : source.provider === "google" || source.provider === "google-search" ? "Google" : "WEB";
+          return '<li><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer"><span><b>' + provider + '</b><strong>' + escapeHtml(source.name || source.title || result.name) + '</strong></span>' +
+            (source.category || source.address ? '<small>' + escapeHtml([source.category, source.address].filter(Boolean).join(" · ")) + '</small>' : '') + '</a></li>';
+        }).join("");
+        return '<article class="scan-result travel-result discovery-result"><div class="travel-result-hero"><div class="result-status-row"><span class="result-badge">' + icon("spark") + ' ' + t(result.searched ? "searchResultBadge" : "generalGuideBadge") + '</span>' +
+          '<span class="confidence-pill">' + t("guideConfidence", { n: Math.round(result.confidence || 0) }) + '</span></div><span class="travel-kicker">' + t("placeName") + '</span><h3 lang="ko">' + escapeHtml(result.name) + '</h3><div class="result-meaning">' + escapeHtml(result.categoryLabel) + '</div></div>' +
+          '<div class="travel-info-grid"><div><span>' + t("category") + '</span><strong>' + escapeHtml(result.categoryLabel) + '</strong></div><div><span>' + t("recognizedSign") + '</span><strong lang="ko">' + escapeHtml(result.query) + '</strong></div></div>' +
+          '<div class="travel-sections"><section><h4>' + t("easyExplanation") + '</h4><p>' + escapeHtml(result.description) + '</p></section><section><h4>' + t("expectedExperience") + '</h4><p>' + escapeHtml(result.experience) + '</p></section>' +
+          (phrases ? '<section class="useful-language"><h4>' + t("usefulKorean") + '</h4><ul>' + phrases + '</ul></section>' : '') +
+          (sources ? '<section class="discovery-evidence"><h4>' + t(result.searched ? "searchEvidence" : "searchNextLinks") + '</h4><ul>' + sources + '</ul></section>' : '') + '</div>' +
+          '<p class="travel-disclaimer">' + escapeHtml(result.disclaimer) + '</p><div class="travel-result-actions">' + mapSearchLinks(result.name || result.query) + teachFormMarkup() + '</div></article>';
       }
       function renderScanResult() {
         if (camera.selected) {
@@ -1405,7 +1489,7 @@ function renderDetail() {
              ((camera.result && camera.result.candidates || []).length > 1 ? '<button class="text-btn" data-action="correct-result">' + t("correctAi") + '</button>' : '') + '</div>' : '') + mapLinks(card) + teachFormMarkup() + '</div></article>';
         }
         if (!camera.result) return "";
-        if (camera.result.status === "no_match") return '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + (camera.result.suggestedCategory ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(camera.result.suggestedCategory.id), n: camera.result.suggestedCategory.confidence }) + '</p>' : '') + mapSearchLinks(camera.text) + teachFormMarkup() + '</div>';
+        if (camera.result.status === "no_match") return camera.discovery ? renderDiscoveryResult() : '<div class="scan-result"><h2>' + t("noMatchTitle") + '</h2><p>' + t("noMatchBody") + '</p>' + mapSearchLinks(camera.text) + '</div>';
         return '<div class="scan-result"><h2>' + t("candidateTitle") + '</h2><p>' + t("candidateBody") + '</p><div class="candidate-list">' +
           camera.result.candidates.map(function (candidate) {
             var c = findCard(candidate.id);
@@ -1449,7 +1533,7 @@ function renderDetail() {
         stage.addEventListener("pointerup", function () {
           drag = null;
           if (camera.crop && (camera.crop.w < .025 || camera.crop.h < .025)) camera.crop = null;
-          camera.result = null; camera.selected = null;
+          camera.result = null; camera.discovery = null; camera.selected = null;
           updateCrop();
           var result = document.getElementById("scanResult"); if (result) result.innerHTML = "";
         });
@@ -1464,7 +1548,7 @@ function renderDetail() {
       }
       async function readPhoto() {
         if (!camera.photo || camera.busy) return;
-        camera.busy = true; camera.error = false; camera.notice = t("ocrLoading"); camera.progress = 0; camera.result = null; camera.selected = null;
+        camera.busy = true; camera.error = false; camera.notice = t("ocrLoading"); camera.progress = 0; camera.result = null; camera.discovery = null; camera.selected = null;
         var run = ++camera.run;
         render();
         try {
@@ -1478,7 +1562,7 @@ function renderDetail() {
           var context = canvas.getContext("2d");
           context.fillStyle = "#fff"; context.fillRect(0, 0, canvas.width, canvas.height);
           context.drawImage(image, image.naturalWidth * crop.x, image.naturalHeight * crop.y, width, height, 0, 0, canvas.width, canvas.height);
-          var assetRoot = mobileMode ? "." : "";
+          var assetRoot = localMatchMode ? "." : "";
           var worker = await Tesseract.createWorker("kor+eng", 1, {
             workerPath: assetRoot + "/vendor/tesseract/worker.min.js", corePath: assetRoot + "/vendor/core", langPath: assetRoot + "/ocr-data", gzip: false, workerBlobURL: false,
             logger: function (event) {
@@ -1510,24 +1594,82 @@ function renderDetail() {
           camera.busy = false; camera.notice = t("ocrError"); camera.error = true; render();
         }
       }
+      function fallbackDiscovery(text) {
+        var language = state.language;
+        var copy = {
+          ko: {
+            category: "가게·장소",
+            description: "간판 이름은 읽었지만 정확한 업종을 자동으로 확인하지는 못했어요. 지도 검색 결과를 함께 확인해 주세요.",
+            experience: "아래 문장으로 직원에게 어떤 곳인지, 무엇을 이용할 수 있는지 바로 물어볼 수 있어요.",
+            disclaimer: "간판 문구를 바탕으로 만든 범용 안내예요. 정확한 지점·영업시간·메뉴·서비스는 지도 검색 결과에서 다시 확인해 주세요.",
+            meanings: ["어떤 서비스를 제공하는지 묻는 말", "가장 인기 있는 상품이나 서비스를 묻는 말", "카드 결제가 가능한지 묻는 말"]
+          },
+          en: {
+            category: "Shop or place",
+            description: "The sign name was read, but the exact business type could not be confirmed automatically. Check the map results as well.",
+            experience: "Use the phrases below to ask staff what the place offers.",
+            disclaimer: "This is general guidance based on the readable sign name. Confirm the branch, hours, menu, and services in the map result.",
+            meanings: ["What kind of place is this?", "What is the most popular item or service?", "Can I pay by card?"]
+          },
+          ja: {
+            category: "店・場所",
+            description: "看板名は読み取れましたが、正確な業種を自動確認できませんでした。地図の検索結果も確認してください。",
+            experience: "下の表現で、この店が何を提供しているか店員に確認できます。",
+            disclaimer: "読み取れた看板名に基づく一般案内です。店舗、営業時間、メニュー、サービスは地図の検索結果で確認してください。",
+            meanings: ["どんなサービスを提供するか尋ねる表現", "一番人気の商品やサービスを尋ねる表現", "カード払いが可能か尋ねる表現"]
+          }
+        }[language];
+        var encoded = encodeURIComponent(text);
+        return {
+          status: "guidance", query: text, name: text, category: "unknown", categoryLabel: copy.category, description: copy.description, experience: copy.experience, confidence: 25, searched: false,
+          phrases: [
+            { korean: "여기는 뭐 하는 곳이에요?", romanization: "Yeogineun mwo haneun gosieyo?", meaning: copy.meanings[0] },
+            { korean: "가장 인기 있는 게 뭐예요?", romanization: "Gajang ingi inneun ge mwoyeyo?", meaning: copy.meanings[1] },
+            { korean: "카드로 결제할 수 있어요?", romanization: "Kadeuro gyeoljehal su isseoyo?", meaning: copy.meanings[2] }
+          ],
+          sources: [
+            { provider: "naver-search", title: "네이버 지도 검색", url: "https://map.naver.com/p/search/" + encoded },
+            { provider: "google-search", title: "Google Maps 검색", url: "https://www.google.com/maps/search/?api=1&query=" + encoded + "%20Korea" }
+          ],
+          disclaimer: copy.disclaimer
+        };
+      }
+      async function discoverUnknown(run) {
+        camera.notice = t("searchingWeb"); camera.error = false; camera.busy = true; render();
+        try {
+          var endpoint = mobileMode ? (window.SignBySignConfig && window.SignBySignConfig.discoveryUrl) : (standaloneMode ? "" : "/api/discover");
+          if (!endpoint) throw new Error("Discovery service unavailable");
+          var response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: camera.text, language: state.language }) });
+          if (!response.ok) throw new Error("Discovery failed");
+          var discovery = await response.json();
+          if (run !== camera.run) return;
+          camera.discovery = discovery;
+        } catch (_) {
+          if (run !== camera.run) return;
+          camera.discovery = fallbackDiscovery(camera.text);
+        }
+        camera.busy = false; camera.notice = ""; camera.error = false; render();
+      }
       async function lookupSign(fromForm) {
         if (camera.busy) return;
         var field = document.getElementById("recognizedText");
         if (fromForm && field) camera.text = field.value.trim();
         if (!camera.text) { camera.notice = t("emptyText"); camera.error = true; render(); return; }
         var run = ++camera.run;
-        camera.busy = true; camera.notice = t("matching"); camera.error = false; camera.result = null; camera.selected = null; render();
+        camera.busy = true; camera.notice = t("matching"); camera.error = false; camera.result = null; camera.discovery = null; camera.selected = null; render();
         try {
           var payload = { text: camera.text, confidence: camera.confidence, source: camera.edited ? "manual" : "ocr" };
           var result;
-          if (mobileMode && window.SignNative) result = window.SignNative.match(cards, payload);
+          if (localMatchMode && window.SignNative) result = window.SignNative.match(cards, payload);
           else {
             var response = await fetch("/api/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
             if (!response.ok) throw new Error("Lookup failed");
             result = await response.json();
           }
           if (run !== camera.run) return;
-          camera.result = result; camera.selected = result.matchedId; camera.busy = false; camera.notice = ""; render();
+          camera.result = result; camera.selected = result.matchedId;
+          if (result.status === "no_match") { await discoverUnknown(run); return; }
+          camera.busy = false; camera.notice = ""; render();
         } catch (_) {
           if (run !== camera.run) return;
           camera.busy = false; camera.notice = t("matchError"); camera.error = true; render();
@@ -1542,7 +1684,7 @@ function renderDetail() {
         if (event.target.id === "teachForm") { event.preventDefault(); saveContribution(); }
       });
       app.addEventListener("input", function (event) {
-        if (event.target.id === "recognizedText") { camera.text = event.target.value; camera.edited = true; camera.selected = null; camera.result = null; var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
+        if (event.target.id === "recognizedText") { camera.text = event.target.value; camera.edited = true; camera.selected = null; camera.result = null; camera.discovery = null; var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
         if (event.target.id === "librarySearch") { libraryQuery = event.target.value; document.getElementById("catalogGrid").innerHTML = catalogGridMarkup(); document.getElementById("libraryCount").textContent = t("signsCount", { n: filteredLibrary().length }); }
       });
       app.addEventListener("change", function (event) {
@@ -1579,7 +1721,7 @@ function renderDetail() {
         else if (action === "capture") capturePhoto();
         else if (action === "ocr") readPhoto();
         else if (action === "cancel-ocr") { cancelOcr(); camera.notice = ""; render(); }
-        else if (action === "reset-crop") { camera.crop = null; camera.result = null; camera.selected = null; updateCrop(); var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
+        else if (action === "reset-crop") { camera.crop = null; camera.result = null; camera.discovery = null; camera.selected = null; updateCrop(); var result = document.getElementById("scanResult"); if (result) result.innerHTML = ""; }
         else if (action === "confirm-candidate") { camera.selected = target.dataset.id; reinforceSelection(camera.selected, true); render(); }
         else if (action === "reinforce-result") { reinforceSelection(target.dataset.id, false); render(); }
         else if (action === "correct-result") { camera.selected = null; camera.reinforced = false; render(); }
@@ -1589,6 +1731,16 @@ function renderDetail() {
           communityBusy = true; communityNotice = t("syncing"); render();
           try { var syncStats = await window.SignNative.syncCommunity(); mergePublishedCards(); communityNotice = t(syncStats.lastSyncStatus === "ok" ? "syncDone" : "syncBundled"); }
           catch (_) { communityNotice = t("syncOffline"); }
+          communityBusy = false; render();
+        }
+        else if (action === "community-vote") {
+          if (!window.SignNative || !window.SignNative.voteCommunity || communityBusy) return;
+          communityBusy = true; communityNotice = t("syncing"); render();
+          try {
+            var voteResult = await window.SignNative.voteCommunity({ id: target.dataset.id, vote: target.dataset.vote });
+            mergePublishedCards();
+            communityNotice = t(voteResult.status === "published" ? "communityPublished" : "communityVoteSaved");
+          } catch (_) { communityNotice = t("syncOffline"); }
           communityBusy = false; render();
         }
         else if (action === "save-review") saveForReview(target.dataset.id);
@@ -1665,7 +1817,7 @@ function renderDetail() {
         state.onboarded = true;
         showSampleScan(previewId);
       } else render();
-      if (mobileMode && window.SignNative) {
+      if (window.SignNative) {
         window.SignNative.syncCommunity().then(function () {
           mergePublishedCards();
           if (screen === "community") render();

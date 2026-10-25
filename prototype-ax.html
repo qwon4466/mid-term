@@ -4,16 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f8f3">
-  <meta name="description" content="한국어 간판을 촬영해 장소·가게명, 업종, 쉬운 설명, 기대 경험과 바로 쓰는 한국어를 확인하세요.">
-  <title>Sign by Sign — 간판으로 도시 읽기</title>
-  <link rel="stylesheet" href="/ax.css">
-  <script src="/vendor/tesseract/tesseract.min.js" defer></script>
-  <script src="/ax.js" defer></script>
+  <meta name="description" content="학습, 간판 탐색, 사진 인식, 복습, AI 피드백까지 한 번에 확인하는 Sign by Sign 웹 데모입니다.">
+  <meta name="application-name" content="Sign by Sign">
+  <title>Sign by Sign — 전체 기능 웹 데모</title>
+  <link rel="stylesheet" href="./ax.css">
+  <script>
+    window.SIGN_BY_SIGN_MODE = location.protocol === "file:" ? "standalone" : "web";
+    window.SignBySignConfig = location.protocol === "file:" ? {} : {
+      communityCatalogUrl: "/api/community",
+      communitySubmitUrl: "/api/community/contributions",
+      communityVoteUrl: "/api/community/contributions"
+    };
+  </script>
+  <script src="./data/catalog-inline.js" defer></script>
+  <script src="./web-bridge.js" defer></script>
+  <script src="./vendor/tesseract/tesseract.min.js" defer></script>
+  <script src="./ax.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#pageContent">본문으로 이동 · Skip to content</a>
   <main id="app" data-feature="travel-sign-scanner" aria-label="Sign by Sign">
-    <div class="startup-error" role="status"><span class="brand-mark">ㅅ</span><h1>여행자용 간판 정보를 준비하고 있어요.</h1><p>Loading the sign scanner…</p></div>
+    <div class="startup-error" role="status"><span class="brand-mark">ㅅ</span><h1>전체 기능 웹 데모를 준비하고 있어요.</h1><p>학습 · 간판 탐색 · 촬영 · 복습 · AI 피드백을 불러오는 중입니다.</p></div>
   </main>
   <input id="captureInput" type="file" accept="image/*" capture="environment" hidden>
   <input id="uploadInput" type="file" accept="image/*" hidden>
