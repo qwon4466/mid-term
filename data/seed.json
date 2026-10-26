@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "categories": [
     {
       "id": "medical",
@@ -54,9 +54,9 @@
         "ja": "飲食店"
       },
       "description": {
-        "ko": "한식 · 중식 · 일식 · 프랜차이즈",
-        "en": "Korean · Chinese · Japanese · chains",
-        "ja": "韓国料理・中華・和食・チェーン"
+        "ko": "한식 · 중식 · 일식 · 프랜차이즈 · 주점",
+        "en": "Korean · Chinese · Japanese · chains · pubs",
+        "ja": "韓国料理・中華・和食・チェーン・居酒屋"
       },
       "cover": "korean",
       "icon": "food"
@@ -189,6 +189,15 @@
         "ko": "프랜차이즈 식당",
         "en": "Chain restaurant",
         "ja": "チェーン店"
+      }
+    },
+    {
+      "id": "pub",
+      "category": "restaurant",
+      "label": {
+        "ko": "주점·맥주전문점",
+        "en": "Pub or beer bar",
+        "ja": "居酒屋・ビアバー"
       }
     }
   ],

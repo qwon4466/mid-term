@@ -40,6 +40,10 @@ test('HTTP serves the full webpage and database catalog', async () => {
   assert.match(client, /data-action="quick-camera"/);
   assert.match(client, /usePhoto\(event\.target\.files\[0\], true\)/);
   assert.match(client, /function discoverUnknown\(run\)/);
+  assert.match(client, /SignNative\.discoverPlace/);
+  assert.match(client, /discovery\.category === "unknown"/);
+  assert.match(client, /discoveryCategory === "bar" \? "restaurant"/);
+  assert.match(client, /suggestedSubcategoryId = discoveryCategory === "bar" \? "pub"/);
   assert.match(client, /renderDiscoveryResult/);
   assert.match(client, /class="scan-result travel-result"/);
   assert.match(client, /guide\.experience\[state\.language\]/);
@@ -69,6 +73,12 @@ test('unknown signs receive a useful discovery card instead of a dead end', asyn
   assert.equal(unknownPayload.status, 'guidance');
   assert.ok(unknownPayload.phrases.length >= 3);
   assert.equal(unknownPayload.searchLinks.length, 2);
+
+  const pub = await discover({ text: '역전할머니맥주', language: 'ko' });
+  assert.equal(pub.status, 200);
+  const pubPayload = await pub.json();
+  assert.equal(pubPayload.category, 'bar');
+  assert.match(pubPayload.description, /맥주/);
 });
 
 test('HTTP matching returns exact, uncertain, ambiguous and unknown states', async () => {

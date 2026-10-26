@@ -118,7 +118,7 @@ export function getCatalog(db) {
     return { id: s.id, category: s.category_id, subcategory: s.subcategory_id, brand: s.brand_id, brandName: s.brand_name, korean: s.korean, difficulty: s.difficulty,
       image: primary.path, portrait: primary.portrait || primary.path, imageKind: primary.kind, images, translations, travelGuide, aliases: db.prepare('SELECT text FROM aliases WHERE sign_id = ?').all(s.id).map(a => a.text), ...translations.en };
   });
-  return { version: 3, categories, subcategories, cards };
+  return { version: 4, categories, subcategories, cards };
 }
 
 if (process.argv.includes('--seed')) {

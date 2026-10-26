@@ -9,10 +9,13 @@ const db = openDatabase(':memory:');
 after(() => db.close());
 const match = (text, extra = {}) => matchText(db, { text, source: 'manual', confidence: 0, ...extra });
 
-test('catalog has four categories and sixteen complete subcategories', () => {
+test('catalog has four categories, including a pub learning category', () => {
   const catalog = getCatalog(db);
   assert.deepEqual(catalog.categories.map(c => c.id), ['medical', 'cafe', 'transport', 'restaurant']);
-  assert.equal(catalog.subcategories.length, 16);
+  assert.equal(catalog.subcategories.length, 17);
+  assert.deepEqual(catalog.subcategories.find(item => item.id === 'pub'), {
+    id: 'pub', category: 'restaurant', label: { ko: '주점·맥주전문점', en: 'Pub or beer bar', ja: '居酒屋・ビアバー' }
+  });
   assert.equal(catalog.cards.length, 22);
   assert.equal(new Set(catalog.cards.map(c => c.subcategory)).size, 16);
   for (const c of catalog.cards) {

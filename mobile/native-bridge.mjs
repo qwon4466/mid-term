@@ -1,10 +1,34 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { Camera, CameraDirection, CameraResultType, CameraSource } from '@capacitor/camera';
 import { chooseAdaptiveMatch, matchCatalog, normalizeText, recognizedPieces, suggestCategory } from '../recognition-core.mjs';
 
 const LEARNING_KEY = 'sign-by-sign-ai-learning-v1';
 const COMMUNITY_KEY = 'sign-by-sign-community-v1';
 const COMMUNITY_CLIENT_KEY = 'sign-by-sign-community-client-v1';
+
+async function requestJson(url, { method = 'GET', data, headers = {} } = {}) {
+  if (Capacitor.isNativePlatform() && /^https?:\/\//i.test(url)) {
+    const response = await CapacitorHttp.request({
+      url,
+      method,
+      headers,
+      data,
+      connectTimeout: 8000,
+      readTimeout: 10000
+    });
+    if (response.status < 200 || response.status >= 300) throw new Error(`Request ${response.status}`);
+    if (typeof response.data === 'string') return JSON.parse(response.data);
+    return response.data;
+  }
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: data === undefined ? undefined : JSON.stringify(data),
+    cache: method === 'GET' ? 'no-store' : undefined
+  });
+  if (!response.ok) throw new Error(`Request ${response.status}`);
+  return response.json();
+}
 
 function readJson(key, fallback) {
   try {
@@ -160,9 +184,7 @@ async function syncCommunity() {
   try {
     if (config.communityCatalogUrl) {
       try {
-        const response = await fetch(config.communityCatalogUrl, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`Catalog ${response.status}`);
-        published = await response.json();
+        published = await requestJson(config.communityCatalogUrl);
         remoteCatalogLoaded = true;
       } catch (_) { /* Keep the bundled catalog available offline. */ }
     }
@@ -178,21 +200,18 @@ async function syncCommunity() {
 
     if (config.communitySubmitUrl) {
       for (const item of state.queue.filter(entry => entry.status === 'pending')) {
-        const response = await fetch(config.communitySubmitUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) });
-        if (!response.ok) throw new Error(`Contribution ${response.status}`);
-        const accepted = await response.json();
+        const accepted = await requestJson(config.communitySubmitUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, data: item });
         item.status = 'submitted';
         item.serverId = accepted.id;
         item.submittedAt = Date.now();
       }
       if (config.communityCatalogUrl) {
-        const refreshed = await fetch(config.communityCatalogUrl, { cache: 'no-store' });
-        if (refreshed.ok) {
-          const latest = await refreshed.json();
+        try {
+          const latest = await requestJson(config.communityCatalogUrl);
           if (Array.isArray(latest.cards)) state.publishedCards = latest.cards.filter(validPublishedCard);
           state.sharedContributions = Array.isArray(latest.pending) ? latest.pending : [];
           state.version = Number(latest.version) || state.version || 0;
-        }
+        } catch (_) { /* Submission succeeded; keep the last available catalog. */ }
       }
     }
     state.lastSyncAt = Date.now();
@@ -222,11 +241,9 @@ function getCommunityFeed() {
 async function voteCommunity({ id, vote }) {
   const config = globalThis.SignBySignConfig || {};
   if (!config.communityVoteUrl || !id || !['confirm', 'reject'].includes(vote)) throw new Error('Community voting is not connected.');
-  const response = await fetch(`${config.communityVoteUrl}/${encodeURIComponent(id)}/vote`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vote, clientId: communityClientId() })
+  const result = await requestJson(`${config.communityVoteUrl}/${encodeURIComponent(id)}/vote`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, data: { vote, clientId: communityClientId() }
   });
-  if (!response.ok) throw new Error(`Community vote ${response.status}`);
-  const result = await response.json();
   await syncCommunity();
   return result;
 }
@@ -234,13 +251,20 @@ async function voteCommunity({ id, vote }) {
 async function submitSupport(input) {
   const config = globalThis.SignBySignConfig || {};
   if (!config.supportUrl) throw new Error('Support service is not connected.');
-  const response = await fetch(config.supportUrl, {
+  return requestJson(config.supportUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...input, clientId: communityClientId() })
+    data: { ...input, clientId: communityClientId() }
   });
-  if (!response.ok) throw new Error(`Support request ${response.status}`);
-  return response.json();
+}
+
+async function discoverPlace({ url, text, language }) {
+  if (!url || !text) throw new Error('Discovery service is not connected.');
+  return requestJson(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: { text: String(text).trim().slice(0, 120), language: ['ko', 'en', 'ja'].includes(language) ? language : 'ko' }
+  });
 }
 
 globalThis.SignNative = {
@@ -259,6 +283,7 @@ globalThis.SignNative = {
   syncCommunity,
   voteCommunity,
   submitSupport,
+  discoverPlace,
   getLearningStats,
   getPublishedCards,
   getContributionQueue,

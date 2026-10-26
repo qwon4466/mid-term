@@ -210,9 +210,9 @@
     "ja": "どの看板から学ぶ？"
   },
   "categorySubtitle": {
-    "ko": "4개 분야 · 16개 세부 분류",
-    "en": "4 categories · 16 types",
-    "ja": "4分野・16種類"
+    "ko": "4개 분야 · 17개 세부 분류",
+    "en": "4 categories · 17 types",
+    "ja": "4分野・17種類"
   },
   "featureTag": {
     "ko": "보고 · 이해하고 · 기억하기",
@@ -1452,15 +1452,19 @@ function renderDetail() {
         if (camera.teachSaved) return '<div class="ai-learned-notice" role="status">' + icon("check") + '<span>' + t("reportSaved") + '</span></div>';
         if (!camera.teachOpen) return '<button class="secondary-btn teach-ai-btn" data-action="teach-sign">' + icon("spark") + t("teachAi") + '</button>';
         var suggestion = camera.result && camera.result.suggestedCategory;
-        var suggestedId = suggestion && catalog.categories.some(function (category) { return category.id === suggestion.id; }) ? suggestion.id : catalog.categories[0].id;
+        var discoveryCategory = camera.discovery && camera.discovery.category;
+        var suggestedId = discoveryCategory === "bar" ? "restaurant" : (suggestion && catalog.categories.some(function (category) { return category.id === suggestion.id; }) ? suggestion.id : catalog.categories[0].id);
+        var suggestedSubcategoryId = discoveryCategory === "bar" ? "pub" : "";
         var suggestedSubcategories = subcategories.filter(function (item) { return item.category === suggestedId; });
         var firstLine = camera.text.split(/[\n\r|,;:]+/).map(function (line) { return line.trim(); }).filter(Boolean)[0] || "";
-        var suggestionMarkup = suggestion ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(suggestion.id), n: suggestion.confidence }) + '</p>' : '';
+        var suggestedConfidence = discoveryCategory === "bar" ? (camera.discovery.confidence || 76) : (suggestion && suggestion.confidence);
+        var suggestionMarkup = discoveryCategory === "bar" || suggestion ? '<p class="category-suggestion">' + t("suggestedCategory", { name: categoryLabel(suggestedId), n: suggestedConfidence }) + '</p>' : '';
+        var discoveryDescription = camera.discovery && camera.discovery.description || "";
         return '<form class="teach-form" id="teachForm"><div class="teach-heading"><span class="feature-tag">' + icon("spark") + ' HUMAN-IN-THE-LOOP</span><h3>' + t("teachTitle") + '</h3></div>' + suggestionMarkup +
           '<label>' + t("storeName") + '<input id="teachStoreName" maxlength="120" required value="' + escapeHtml(firstLine) + '"></label>' +
           '<label>' + t("category") + '<select id="teachCategory" required>' + catalog.categories.map(function (category) { return '<option value="' + category.id + '" ' + (category.id === suggestedId ? 'selected' : '') + '>' + escapeHtml(category.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
-          '<label>' + t("subcategory") + '<select id="teachSubcategory" required>' + suggestedSubcategories.map(function (item) { return '<option value="' + item.id + '">' + escapeHtml(item.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
-          '<label>' + t("description") + '<textarea id="teachDescription" maxlength="800" rows="3"></textarea></label>' +
+          '<label>' + t("subcategory") + '<select id="teachSubcategory" required>' + suggestedSubcategories.map(function (item) { return '<option value="' + item.id + '" ' + (item.id === suggestedSubcategoryId ? 'selected' : '') + '>' + escapeHtml(item.label[state.language]) + '</option>'; }).join("") + '</select></label>' +
+          '<label>' + t("description") + '<textarea id="teachDescription" maxlength="800" rows="3">' + escapeHtml(discoveryDescription) + '</textarea></label>' +
           '<label class="consent-row"><input id="teachConsent" type="checkbox" required><span>' + t("infoConsent") + '</span></label>' +
           '<label class="consent-row optional-consent"><input id="teachPhotoConsent" type="checkbox"><span>' + t("photoUploadConsent") + '</span></label><p class="consent-note">' + t("photoUploadNote") + '</p>' +
           '<button class="primary-btn" type="submit">' + t("submitReport") + icon("arrow") + '</button></form>';
@@ -1649,6 +1653,8 @@ function renderDetail() {
       }
       function fallbackDiscovery(text) {
         var language = state.language;
+        var compact = String(text || "").normalize("NFKC").toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]/gu, "");
+        var knownBar = /역전할머니맥주|역전할맥|할맥|인쌩맥주|인생맥주|생활맥주|크라운호프|맥주|beer|pub/.test(compact);
         var copy = {
           ko: {
             category: "가게·장소",
@@ -1672,14 +1678,42 @@ function renderDetail() {
             meanings: ["どんなサービスを提供するか尋ねる表現", "一番人気の商品やサービスを尋ねる表現", "カード払いが可能か尋ねる表現"]
           }
         }[language];
+        var barCopy = {
+          ko: {
+            category: "맥주 전문점·주점",
+            description: "간판 이름과 알려진 브랜드 정보를 기준으로 맥주와 안주를 판매하는 주점으로 확인했어요.",
+            experience: "자리에 앉아 술과 안주를 주문하는 곳이에요. 인기 안주, 맥주 종류, 마지막 주문 시간을 확인할 수 있어요.",
+            disclaimer: "브랜드의 일반적인 업종 정보예요. 정확한 지점·영업시간·메뉴는 네이버 또는 Google 지도에서 확인해 주세요.",
+            meanings: ["생맥주 두 잔을 주문하는 말", "인기 안주를 묻는 말", "마지막 주문 시간을 묻는 말"]
+          },
+          en: {
+            category: "Beer pub or bar",
+            description: "The sign name and known brand information indicate a pub serving beer and food to share.",
+            experience: "Take a seat and order drinks with shared dishes. Ask about popular food, beer choices, and last order time.",
+            disclaimer: "This is general brand information. Confirm the exact branch, hours, and menu on Naver or Google Maps.",
+            meanings: ["Two draft beers, please.", "What is the popular dish to have with drinks?", "What time is last order?"]
+          },
+          ja: {
+            category: "ビアパブ・居酒屋",
+            description: "看板名と一般的なブランド情報から、ビールと料理を提供する居酒屋と確認しました。",
+            experience: "席に座り、お酒と料理を注文します。人気のおつまみ、ビールの種類、ラストオーダーを確認できます。",
+            disclaimer: "ブランドの一般的な情報です。正確な店舗、営業時間、メニューはNaverまたはGoogleマップで確認してください。",
+            meanings: ["生ビールを2杯注文する表現", "人気のおつまみを尋ねる表現", "ラストオーダーを尋ねる表現"]
+          }
+        }[language];
+        if (knownBar) copy = barCopy;
         var encoded = encodeURIComponent(text);
         return {
-          status: "guidance", query: text, name: text, category: "unknown", categoryLabel: copy.category, description: copy.description, experience: copy.experience, confidence: 25, searched: false,
-          phrases: [
-            { korean: "여기는 뭐 하는 곳이에요?", romanization: "Yeogineun mwo haneun gosieyo?", meaning: copy.meanings[0] },
-            { korean: "가장 인기 있는 게 뭐예요?", romanization: "Gajang ingi inneun ge mwoyeyo?", meaning: copy.meanings[1] },
-            { korean: "카드로 결제할 수 있어요?", romanization: "Kadeuro gyeoljehal su isseoyo?", meaning: copy.meanings[2] }
-          ],
+          status: knownBar ? "guided" : "guidance", query: text, name: /인생맥주/.test(compact) ? "인쌩맥주" : text, category: knownBar ? "bar" : "unknown", categoryLabel: copy.category, description: copy.description, experience: copy.experience, confidence: knownBar ? 76 : 25, searched: false,
+          phrases: knownBar ? [
+            { korean: "생맥주 두 잔 주세요.", romanization: "Saengmaekju du jan juseyo.", meaning: copy.meanings[0] },
+            { korean: "인기 있는 안주가 뭐예요?", romanization: "Ingi inneun anjuga mwoyeyo?", meaning: copy.meanings[1] },
+            { korean: "마지막 주문은 몇 시예요?", romanization: "Majimak jumuneun myeot siyeyo?", meaning: copy.meanings[2] }
+          ] : [
+              { korean: "여기는 뭐 하는 곳이에요?", romanization: "Yeogineun mwo haneun gosieyo?", meaning: copy.meanings[0] },
+              { korean: "가장 인기 있는 게 뭐예요?", romanization: "Gajang ingi inneun ge mwoyeyo?", meaning: copy.meanings[1] },
+              { korean: "카드로 결제할 수 있어요?", romanization: "Kadeuro gyeoljehal su isseoyo?", meaning: copy.meanings[2] }
+            ],
           sources: [
             { provider: "naver-search", title: "네이버 지도 검색", url: "https://map.naver.com/p/search/" + encoded },
             { provider: "google-search", title: "Google Maps 검색", url: "https://www.google.com/maps/search/?api=1&query=" + encoded + "%20Korea" }
@@ -1692,9 +1726,16 @@ function renderDetail() {
         try {
           var endpoint = mobileMode ? (window.SignBySignConfig && window.SignBySignConfig.discoveryUrl) : (standaloneMode ? "" : "/api/discover");
           if (!endpoint) throw new Error("Discovery service unavailable");
-          var response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: camera.text, language: state.language }) });
-          if (!response.ok) throw new Error("Discovery failed");
-          var discovery = await response.json();
+          var discovery;
+          if (mobileMode && window.SignNative && typeof window.SignNative.discoverPlace === "function") {
+            discovery = await window.SignNative.discoverPlace({ url: endpoint, text: camera.text, language: state.language });
+          } else {
+            var response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: camera.text, language: state.language }) });
+            if (!response.ok) throw new Error("Discovery failed");
+            discovery = await response.json();
+          }
+          var localGuide = fallbackDiscovery(camera.text);
+          if (!discovery || (discovery.category === "unknown" && localGuide.category !== "unknown")) discovery = localGuide;
           if (run !== camera.run) return;
           camera.discovery = discovery;
         } catch (_) {

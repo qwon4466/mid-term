@@ -17,6 +17,25 @@ const PROFILE_DATA = {
       ['포장해 주세요.', 'Pojanghae juseyo.', { ko: '포장을 요청하는 말', en: 'To go, please.', ja: '持ち帰りでお願いします。' }]
     ]
   },
+  bar: {
+    match: /술집|맥주|주점|호프|펍|pub|beer|taproom|izakaya/iu,
+    label: { ko: '맥주 전문점·주점', en: 'Beer pub or bar', ja: 'ビアパブ・居酒屋' },
+    explanation: {
+      ko: '맥주와 소주 같은 주류를 안주와 함께 주문하는 주점으로 보여요.',
+      en: 'This appears to be a pub serving beer, soju, and food to share.',
+      ja: 'ビールや焼酎などのお酒と、おつまみを注文する居酒屋のようです。'
+    },
+    experience: {
+      ko: '자리에 앉아 술과 안주를 주문하는 곳이에요. 인기 안주, 맥주 종류, 마지막 주문 시간을 확인할 수 있어요.',
+      en: 'Take a seat and order drinks with shared dishes. You can ask about popular food, beer choices, and last order time.',
+      ja: '席に座り、お酒と料理を注文します。人気のおつまみ、ビールの種類、ラストオーダーを確認できます。'
+    },
+    phrases: [
+      ['생맥주 두 잔 주세요.', 'Saengmaekju du jan juseyo.', { ko: '생맥주 두 잔을 주문하는 말', en: 'Two draft beers, please.', ja: '生ビールを2杯ください。' }],
+      ['인기 있는 안주가 뭐예요?', 'Ingi inneun anjuga mwoyeyo?', { ko: '인기 안주를 묻는 말', en: 'What is the popular dish to have with drinks?', ja: '人気のおつまみは何ですか？' }],
+      ['마지막 주문은 몇 시예요?', 'Majimak jumuneun myeot siyeyo?', { ko: '마지막 주문 시간을 묻는 말', en: 'What time is last order?', ja: 'ラストオーダーは何時ですか？' }]
+    ]
+  },
   restaurant: {
     match: /음식|식당|한식|중식|일식|분식|restaurant|food|meal|barbecue|pizza|chicken/iu,
     label: { ko: '음식점', en: 'Restaurant', ja: '飲食店' },
@@ -123,7 +142,11 @@ const COMMON_BRANDS = [
   { aliases: ['올리브영', 'oliveyoung'], name: '올리브영', profile: 'retail' },
   { aliases: ['gs25'], name: 'GS25', profile: 'convenience' },
   { aliases: ['세븐일레븐', '7eleven'], name: '세븐일레븐', profile: 'convenience' },
-  { aliases: ['씨유'], name: 'CU', profile: 'convenience' }
+  { aliases: ['씨유'], name: 'CU', profile: 'convenience' },
+  { aliases: ['역전할머니맥주', '역전할맥', '할맥', 'yeokjeonhalmeonibeer'], name: '역전할머니맥주', profile: 'bar' },
+  { aliases: ['인쌩맥주', '인생맥주', 'inssaengbeer'], name: '인쌩맥주', profile: 'bar' },
+  { aliases: ['생활맥주', 'dailybeer'], name: '생활맥주', profile: 'bar' },
+  { aliases: ['크라운호프', 'crownhop'], name: '크라운호프', profile: 'bar' }
 ];
 
 function normalize(value) {

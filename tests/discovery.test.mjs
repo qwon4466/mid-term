@@ -13,6 +13,19 @@ test('common unregistered brands receive useful guidance without API credentials
   assert.deepEqual(providerStatus({}), { naver: false, google: false });
 });
 
+test('beer-pub brands explain the business and useful phrases without API credentials', async () => {
+  for (const [input, canonical] of [['역전할머니맥주', '역전할머니맥주'], ['인생맥주', '인쌩맥주']]) {
+    const result = await discoverSign({ text: input, language: 'ko' }, {});
+    assert.equal(result.status, 'guided');
+    assert.equal(result.name, canonical);
+    assert.equal(result.category, 'bar');
+    assert.match(result.categoryLabel, /주점/);
+    assert.match(result.description, /맥주/);
+    assert.ok(result.phrases.some(phrase => phrase.korean.includes('생맥주')));
+    assert.equal(result.sources.length, 2);
+  }
+});
+
 test('completely unknown signs still return universal phrases and map searches', async () => {
   const result = await discoverSign({ text: '새로운상점123', language: 'ko' }, {});
   assert.equal(result.status, 'guidance');
