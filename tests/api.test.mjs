@@ -42,6 +42,8 @@ test('HTTP serves the full webpage and database catalog', async () => {
   assert.match(client, /function discoverUnknown\(run\)/);
   assert.match(client, /SignNative\.discoverPlace/);
   assert.match(client, /discovery\.category === "unknown"/);
+  assert.match(client, /refreshDiscovery = screen === "camera"/);
+  assert.match(client, /await discoverUnknown\(discoveryRun\)/);
   assert.match(client, /discoveryCategory === "bar" \? "restaurant"/);
   assert.match(client, /suggestedSubcategoryId = discoveryCategory === "bar" \? "pub"/);
   assert.match(client, /renderDiscoveryResult/);

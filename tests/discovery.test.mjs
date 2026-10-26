@@ -26,6 +26,20 @@ test('beer-pub brands explain the business and useful phrases without API creden
   }
 });
 
+test('discovery guidance is localized when the display language changes', async () => {
+  const english = await discoverSign({ text: '인쌩맥주', language: 'en' }, {});
+  assert.equal(english.categoryLabel, 'Beer pub or bar');
+  assert.match(english.description, /pub serving beer/i);
+  assert.match(english.experience, /order drinks/i);
+  assert.match(english.disclaimer, /Confirm the exact branch/i);
+
+  const japanese = await discoverSign({ text: '인쌩맥주', language: 'ja' }, {});
+  assert.equal(japanese.categoryLabel, 'ビアパブ・居酒屋');
+  assert.match(japanese.description, /ビール/);
+  assert.match(japanese.experience, /お酒と料理/);
+  assert.match(japanese.disclaimer, /正確な店舗/);
+});
+
 test('completely unknown signs still return universal phrases and map searches', async () => {
   const result = await discoverSign({ text: '새로운상점123', language: 'ko' }, {});
   assert.equal(result.status, 'guidance');

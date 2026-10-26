@@ -1801,7 +1801,15 @@ function renderDetail() {
         else if (action === "confirm-language") { state.languageChosen = true; save(); screen = state.onboarded ? "home" : "onboarding"; render(); }
         else if (action === "language-menu") { languageMenuOpen = true; render(); }
         else if (action === "language-close") { languageMenuOpen = false; render(); }
-        else if (action === "switch-language") { state.language = target.dataset.lang; languageMenuOpen = false; save(); render(); }
+        else if (action === "switch-language") {
+          var refreshDiscovery = screen === "camera" && !!camera.discovery && !!camera.text;
+          state.language = target.dataset.lang; languageMenuOpen = false; save();
+          if (refreshDiscovery) {
+            var discoveryRun = ++camera.run;
+            camera.discovery = null;
+            await discoverUnknown(discoveryRun);
+          } else render();
+        }
         else if (action === "nav-home") navigate("home");
         else if (action === "nav-review") navigate("review");
         else if (action === "settings") { settingsReturn = screen; navigate("settings"); }
